@@ -1,0 +1,32 @@
+{
+  "private": true,
+  "name": "zimbra-nextcloud-connector",
+  "version": "3.1.23",
+  "author": "Franck Chalon",
+  "license": "BSD-3-Clause",
+  "description": "Nextcloud files, Talk chat and ONLYOFFICE or Euro-Office editing in Zimbra Modern UI.",
+  "main": "build/index.js",
+  "module": "src/index.js",
+  "scripts": {
+    "build": "zimlet build",
+    "build:chat": "zimlet build --config zimlet.chat.config.js --dest build-chat",
+    "watch": "zimlet watch",
+    "start": "zimlet watch",
+    "package": "zimlet package --name com_nextcloud_connector --label \"Cloud\" --description \"Nextcloud files, Talk chat, ONLYOFFICE and Euro-Office integration for Zimbra Modern UI.\" --pkg-version 3.1.23 --zimbraXVersion \">=0.0.1\"",
+    "package:chat": "node package-chat.js"
+  },
+  "keywords": [
+    "zimlet",
+    "zimbra",
+    "nextcloud",
+    "nextcloud-talk",
+    "chat",
+    "webdav",
+    "onlyoffice",
+    "euro-office"
+  ],
+  "devDependencies": {
+    "@zimbra/zimlet-cli": "18.10.0",
+    "adm-zip": "0.5.18"
+  }
+}

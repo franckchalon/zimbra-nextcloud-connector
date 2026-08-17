@@ -1,4 +1,0 @@
-Manifest-Version: 1.0
-Zimbra-Extension-Class: fr.franckchalon.zimbra.nextcloud.NextcloudConnectorExtension
-Implementation-Title: Zimbra Nextcloud Connector
-Implementation-Version: 3.0.2

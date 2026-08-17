@@ -1,0 +1,49 @@
+name: Compatibility report
+description: Share a successful or unsuccessful environment test
+title: "[Compatibility]: "
+labels: ["compatibility"]
+body:
+  - type: markdown
+    attributes:
+      value: Do not publish server hostnames, account names, secrets or customer data.
+  - type: input
+    id: versions
+    attributes:
+      label: Connector and Zimbra versions
+      placeholder: "Connector 3.0.2; Zimbra 10.x; OS; single/multi mailbox"
+    validations:
+      required: true
+  - type: input
+    id: nextcloud
+    attributes:
+      label: Nextcloud version and storage type
+    validations:
+      required: true
+  - type: input
+    id: editor
+    attributes:
+      label: ONLYOFFICE/Euro-Office connector and Document Server versions
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and operating system
+    validations:
+      required: true
+  - type: textarea
+    id: scenarios
+    attributes:
+      label: Scenarios tested and results
+      description: Use the minimum beta acceptance test in TESTING.md where possible.
+    validations:
+      required: true
+  - type: textarea
+    id: limitations
+    attributes:
+      label: Failures or limitations observed
+  - type: checkboxes
+    id: sanitized
+    attributes:
+      label: Confirmation
+      options:
+        - label: This report contains no credentials, tokens, personal data or private hostnames.
+          required: true

@@ -1,6 +1,6 @@
 # Publishing the first community beta
 
-This is the maintainer checklist for `zimbra-nextcloud-connector` 3.0.2 Public Beta 1.
+This is the maintainer checklist for `zimbra-nextcloud-connector` 3.1.23 Public Beta 2.
 
 ## 1. Complete the compatibility record
 
@@ -27,8 +27,8 @@ Then verify the generated bundle:
 
 ```bash
 cd dist
-sha256sum -c zimbra-nextcloud-connector-v3.0.2.zip.sha256
-unzip -t zimbra-nextcloud-connector-v3.0.2.zip
+sha256sum -c zimbra-nextcloud-connector-v3.1.23.zip.sha256
+unzip -t zimbra-nextcloud-connector-v3.1.23.zip
 ```
 
 Search for accidental private data before the first commit:
@@ -48,7 +48,7 @@ Run a full `npm audit` as an informational build-tool review. The official Zimle
 Create a public repository under the personal account **Franck Chalon**:
 
 - repository name: `zimbra-nextcloud-connector`;
-- description: `Nextcloud file management and ONLYOFFICE/Euro-Office editing for Zimbra Modern UI`;
+- description: `Nextcloud file management, Talk chat and ONLYOFFICE/Euro-Office editing for Zimbra Modern UI`;
 - license: BSD-3-Clause (already included);
 - suggested topics: `zimbra`, `zimlet`, `nextcloud`, `onlyoffice`, `euro-office`, `preact`, `webdav`, `java`;
 - enable Issues and Discussions;
@@ -77,19 +77,19 @@ Review `git status` and `git diff --cached` before committing. Never use `git ad
 Use a beta tag without changing the internal numeric Zimlet version:
 
 ```bash
-git tag -a v3.0.2-beta.1 -m '3.0.2 Public Beta 1'
-git push origin v3.0.2-beta.1
+git tag -a v3.1.23-beta.2 -m '3.1.23 Public Beta 2'
+git push origin v3.1.23-beta.2
 ```
 
 On GitHub, open **Releases → Draft a new release**:
 
-- tag: `v3.0.2-beta.1`;
-- title: `3.0.2 Public Beta 1`;
+- tag: `v3.1.23-beta.2`;
+- title: `3.1.23 Public Beta 2`;
 - check **Set as a pre-release**;
 - paste the summary from `RELEASE_NOTES_BETA.md` and fill the missing exact versions;
 - attach only:
-  - `zimbra-nextcloud-connector-v3.0.2.zip`;
-  - `zimbra-nextcloud-connector-v3.0.2.zip.sha256`;
+  - `zimbra-nextcloud-connector-v3.1.23.zip`;
+  - `zimbra-nextcloud-connector-v3.1.23.zip.sha256`;
 - save as draft, verify both downloads and checksum, then publish.
 
 Do not replace an asset silently after publication. If bytes change, publish `beta.2` with a new tag and release notes.

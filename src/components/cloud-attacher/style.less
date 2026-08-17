@@ -1,0 +1,53 @@
+.modalDialog { width: min(780px, calc(100vw - 48px)) !important; height: auto !important; min-height: 0 !important; max-width: min(780px, calc(100vw - 48px)) !important; max-height: calc(100vh - 20px); resize: none !important; }
+.modalContent { width: 100%; min-height: 0; flex: 0 1 auto; padding: 0 !important; overflow: hidden; }
+.modalInner { width: 100%; height: auto !important; min-height: 0; max-width: none !important; padding: 0 !important; }
+.picker { width: 100%; height: auto !important; min-width: 0; min-height: 0; color: #20384c; }
+.accountBar { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-bottom: 1px solid #d5e3eb; background: linear-gradient(120deg, #eaf7fc, #f5f0ff); }
+.accountBar label { display: flex; min-width: 0; flex: 1 1 auto; align-items: center; gap: 9px; }
+.accountBar label > span { flex: 0 0 auto; color: #38566a; font-size: 12px; font-weight: 700; }
+.accountBar select { min-width: 0; max-width: 460px; flex: 1 1 auto; min-height: 36px; padding: 6px 30px 6px 10px; border: 1px solid #a9c5d5; border-radius: 9px; background: #fff; color: #173c54; font: inherit; font-size: 12px; }
+.accountBar small { flex: 0 1 230px; color: #637d8e; font-size: 10px; line-height: 1.35; }
+.pickerToolbar { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid #dce6ec; background: #f3f8fb; }
+.pickerToolbar button { min-height: 34px; padding: 6px 10px; border: 1px solid #bdced9; border-radius: 8px; background: #fff; color: #09689e; font: inherit; font-size: 12px; cursor: pointer; }
+.pickerToolbar button:disabled { opacity: .5; cursor: default; }
+.pickerToolbar .activeTool { border-color: #1681b7; background: #e4f5fc; color: #075f90; }
+.pickerToolbar strong { min-width: 0; margin-left: auto; overflow: hidden; color: #5e7485; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.pickerSearch { display: flex; align-items: center; gap: 8px; margin: 10px 14px; padding: 0 10px; border: 1px solid #c3d4de; border-radius: 9px; background: #fff; color: #688091; }
+.pickerSearch input { width: 100%; min-height: 36px; border: 0; outline: 0; background: transparent; color: #20384c; font: inherit; font-size: 12px; }
+.treeList { min-height: 0; max-height: min(54vh, 540px); flex: 0 1 auto; overflow-y: auto; background: #fff; }
+.folderRow, .fileRow { display: grid; width: 100%; min-height: 52px; align-items: center; gap: 10px; padding: 8px 14px; border: 0; border-bottom: 1px solid #e7edf1; background: #fff; color: #20384c; font: inherit; text-align: left; }
+.folderRow { grid-template-columns: 30px minmax(0, 1fr) 24px; cursor: pointer; }
+.folderRow:hover, .fileRow:hover { background: #eef8fd; }
+.folderRow > span:first-child, .fileRow > span:nth-child(2) { font-size: 23px; text-align: center; }
+.folderRow > span:last-child { color: #6c8495; font-size: 24px; text-align: right; }
+.fileRow { grid-template-columns: 22px 30px minmax(0, 1fr); cursor: pointer; }
+.fileRow input { width: 16px; height: 16px; accent-color: #0879b9; }
+.fileRow strong, .fileRow small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fileRow strong, .folderRow strong { font-size: 13px; }
+.fileRow small { margin-top: 3px; color: #738696; font-size: 11px; }
+.selectedRow { background: #e5f5fd; }
+.pickerState { display: flex; min-height: 160px; align-items: center; justify-content: center; color: #63798a; font-size: 13px; }
+.pickerError { margin: 10px 14px 0; padding: 9px 11px; border: 1px solid #efb8b2; border-radius: 8px; background: #fff2f1; color: #99261f; font-size: 12px; }
+.pickerProgress { margin: 10px 14px 0; padding: 9px 11px; border: 1px solid #a9d3e5; border-radius: 8px; background: #eaf8fd; color: #146488; font-size: 12px; }
+.manualLinks { display: grid; gap: 8px; margin: 10px 14px 0; padding: 11px; border: 1px solid #a9d3e5; border-radius: 10px; background: #f0f9fd; color: #244d63; font-size: 12px; }
+.manualLinks textarea { width: 100%; min-height: 86px; resize: vertical; padding: 8px; border: 1px solid #b9ceda; border-radius: 7px; background: #fff; color: #20384c; font: 12px/1.45 monospace; }
+.manualLinks button { width: max-content; min-height: 34px; padding: 6px 11px; border: 1px solid #1681b7; border-radius: 8px; background: #fff; color: #09689e; font: inherit; font-weight: 650; cursor: pointer; }
+.pickerFooter { display: flex; align-items: center; gap: 9px; padding: 12px 14px; border-top: 1px solid #dce6ec; background: #f5f9fb; }
+.pickerFooter > div { display: flex; min-width: 0; flex: 1 1 auto; flex-direction: column; gap: 2px; }
+.pickerFooter strong { font-size: 12px; }
+.pickerFooter small { color: #6e8291; font-size: 11px; }
+.pickerFooter button { min-height: 36px; padding: 7px 12px; border-radius: 8px; font: inherit; font-size: 12px; font-weight: 650; cursor: pointer; }
+.cancelButton { border: 1px solid #bdced9; background: #fff; color: #315269; }
+.attachButton { border: 1px solid #0879b9; background: #0879b9; color: #fff; }
+.linkButton { border: 1px solid #3d8f78; background: #ecf8f3; color: #26705a; }
+.pickerFooter button:disabled { opacity: .5; cursor: default; }
+
+@media (max-width: 680px) {
+	.modalDialog { width: calc(100vw - 20px) !important; max-width: calc(100vw - 20px) !important; }
+	.pickerToolbar { align-items: stretch; flex-direction: column; }
+	.accountBar, .accountBar label { align-items: stretch; flex-direction: column; }
+	.accountBar small, .accountBar select { width: 100%; max-width: none; }
+	.pickerToolbar strong { width: 100%; margin-left: 0; }
+	.pickerFooter { align-items: stretch; flex-wrap: wrap; }
+	.pickerFooter > div { flex-basis: 100%; }
+}

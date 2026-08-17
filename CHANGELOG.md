@@ -1,7 +1,210 @@
 # Historique
 
+## 3.1.23 — 2026-08-16
+
+- masquage automatique de la bulle flottante Chat dès que l’espace Chat complet est affiché, aussi bien sur la route dédiée `/modern/cloud/chat` que sur la vue Chat interne de `/modern/cloud` ;
+- chargement progressif des GIF par pages lorsque l’utilisateur approche du bas du sélecteur, dans le Chat complet comme dans le mini-chat ;
+- transmission sécurisée du curseur de pagination à l’application `integration_giphy` de Nextcloud, sans appel Giphy direct depuis le navigateur ;
+- conservation de la recherche et de la position de défilement, suppression des doublons entre pages et protection contre les anciennes réponses arrivant après une nouvelle recherche ;
+- indicateur de chargement en bas de grille et action **Réessayer** en cas d’échec d’une page supplémentaire, sans effacer les résultats déjà chargés ;
+- tests de régression du curseur serveur, du défilement infini, du dédoublonnage et du masquage du lanceur dans les deux formes de l’espace Chat.
+
+## 3.1.22 — 2026-08-16
+
+- suppression complète de l’entrée Chat dans la barre principale Zimbra : seul le `MenuItem` Cloud natif reste affiché, et l’accès Chat passe exclusivement par la bulle flottante puis par son bouton d’ouverture en plein écran ;
+- calcul renforcé du badge non lu de la bulle flottante à partir du total global ou, en repli, de la somme des conversations, avec mise à zéro immédiate de la conversation après lecture ;
+- recherche GIF automatique après une courte pause de saisie dans le mini-chat et dans l’espace Chat complet, tout en conservant la touche Entrée et le bouton de recherche ;
+- correction des aperçus GIF Nextcloud utilisant le chemin frontal `/index.php/apps/integration_giphy/`, strictement limité à la même origine et suivi sans transmettre les identifiants Nextcloud au CDN Giphy ;
+- ajout d’une chaîne de repli pour les miniatures : URL Nextcloud, conversion de la page `giphy.com/gifs/...` vers le média autorisé, puis ressource originale ;
+- tests de régression couvrant l’absence de toute icône Chat dans la navigation, le badge calculé depuis les conversations, le proxy `/index.php` et le repli d’aperçu GIF dans les deux interfaces.
+
+## 3.1.21 — 2026-08-16
+
+- remplacement du libellé **Cloud** par une icône native seule et ajout, juste à côté, d’une icône native **Chat** sans texte ; les deux noms restent disponibles au survol et pour les lecteurs d’écran ;
+- enregistrement des deux accès depuis la Zimlet principale déjà chargée par Zimbra, sans injection ni modification directe du DOM de la barre supérieure ;
+- réduction du lanceur flottant Chat à une bulle compacte, avec badge non lu superposé, afin de ne plus masquer l’interface ;
+- ajout dans le mini-chat d’un sélecteur GIF complet : tendances, recherche, aperçu sécurisé via le proxy Zimbra/Nextcloud et envoi dans la conversation ouverte ;
+- affichage automatique des GIF dans le mini-chat et dans le Chat complet, y compris pour les anciens liens de pages `giphy.com/gifs/...` convertis vers le CDN Giphy autorisé ;
+- nouveaux tests de régression couvrant les deux icônes natives, l’absence de libellé visible, la recherche GIF, l’envoi et le rendu des GIF historiques.
+
+## 3.1.20 — 2026-08-16
+
+- republication de la branche corrigée 3.1.19 sous un nouveau numéro de version afin de fournir une archive téléchargeable distincte et clairement identifiable ;
+- conservation de l’ouverture déterministe de `/modern/cloud` sur les fichiers et de la route séparée `/modern/cloud/chat` ;
+- conservation du mini-chat résilient avec message localisé, bouton **Réessayer**, limitation des requêtes et délai Talk de 8 secondes en cas d’indisponibilité temporaire ;
+- nouvelle compilation complète des Zimlets Cloud et Chat, de l’extension serveur et de l’installateur, avec exécution de toute la suite de tests avant publication.
+
+## 3.1.19 — 2026-08-16
+
+- correction du routage : une visite directe de `/modern/cloud` ouvre désormais toujours les fichiers, même si la dernière vue de la session était le Chat ; `/modern/cloud/chat` reste la route dédiée au plein écran ;
+- suppression de l’interrogation Talk périodique en double dans l’écran Fichiers : le lanceur flottant devient l’unique responsable du compteur et du rafraîchissement global des conversations ;
+- mutualisation des requêtes du mini-chat, temporisation progressive après un échec et réduction du marquage comme lu aux seuls nouveaux messages afin d’éviter de surcharger `mailboxd` et Nextcloud ;
+- ajout d’un délai serveur Talk interactif de 8 secondes, distinct du délai long utilisé pour les transferts de fichiers, afin que Zimbra réponde proprement avant l’expiration du proxy nginx ;
+- remplacement des pages HTML d’erreur 502/503/504 dans le mini-chat par un message localisé et un bouton **Réessayer** ;
+- tests de régression couvrant la récupération après un 504, l’absence de HTML brut, le délai Talk borné et l’ouverture déterministe de la route Cloud.
+
+## 3.1.18 — 2026-08-16
+
+- suppression complète de l’injection DOM des onglets Chat et de la mise en forme forcée de l’entrée Cloud, responsables des doublons, des retours à la ligne et de l’icône `?` sur Zimbra 10.1.20 ;
+- neutralisation du paquet de navigation Chat historique lors de sa mise à niveau : il reste déployable pour remplacer proprement les anciennes versions, mais n’enregistre plus aucun emplacement dans la barre Zimbra ;
+- transformation du bouton flottant **Chat** en mini-chat : liste des conversations et des messages non lus, lecture des 50 derniers messages, réponse rapide, marquage comme lu et actualisation automatique ;
+- ajout d’une commande **ouvrir en grand** dans le mini-chat vers `/modern/cloud/chat`, qui conserve l’espace complet avec création de conversations, suppression, réactions, GIF et partage de fichiers ;
+- migration automatique du contrôleur 3.1.17 déjà présent dans la page et nettoyage ciblé de son ancien onglet sans toucher au bouton Cloud natif ;
+- tests de régression avec document Zimbra parent simulé, vérifiant l’absence totale de mutation de la navigation, l’ouverture du panneau, la sélection d’une conversation, l’envoi d’une réponse et l’accès à l’espace complet.
+
+## 3.1.17 — 2026-08-15
+
+- remplacement des libellés visibles **Cloud** et **Chat** par deux icônes compactes de largeur identique dans la barre principale Zimbra ; les noms restent disponibles au survol et pour les lecteurs d’écran ;
+- correction du retour à la ligne observé sur Zimbra 10.1.20 : le conteneur de navigation parent est maintenant forcé en groupe horizontal non sécable, avec Cloud et Chat réellement côte à côte ;
+- utilisation de l’icône native Zimbra `comment` pour Chat à la place de l’emoji, et positionnement du badge non lu au-dessus de l’icône sans élargir le bouton ;
+- restauration des styles Zimbra d’origine si le contrôleur est arrêté ou remplacé, avec test de régression simulant le document parent réel.
+
+## 3.1.16 — 2026-08-14
+
+- correction de la régression 3.1.15 qui affichait Chat dans l’entrée Cloud mais bloquait ensuite le rendu de l’espace fichiers : le `MenuItem` Cloud redevient strictement simple, sans contrôle interactif enfant ;
+- prise en compte du modèle d’exécution documenté des Zimlets Modern : le code s’exécute dans un bac à sable comparable à une iframe et accède désormais à la véritable interface Zimbra par `window.parent` ;
+- installation de l’entrée **💬 Chat** adjacente et du lanceur flottant dans le document parent, avec navigation effectuée sur l’emplacement parent `/modern/cloud/chat` ;
+- stockage du contrôleur sur la fenêtre parente afin d’éviter les doublons et de rendre son état observable depuis la console principale ;
+- test de régression exécuté avec deux documents distincts, refus explicite de tout contrôle imbriqué dans Cloud et vérification de l’insertion/restauration dans le parent Zimbra.
+
+## 3.1.15 — 2026-08-14
+
+- correction fondée sur le diagnostic réel du paquet consolidé 3.1.14 : le code du lanceur était bien servi par Zimbra, mais exécuté dans un contexte global isolé de la page (`marker` présent et `runtime: false` dans la console principale) ;
+- ajout d’un accès **💬 Chat** directement dans le `MenuItem` Cloud déjà rendu par Zimbra, sans injection DOM, variable globale partagée, second emplacement de navigation ni attente d’un hook de cycle de vie ;
+- conservation du paquet Chat séparé, de l’injection adjacente et du lanceur flottant comme améliorations facultatives sur les environnements qui exposent le même contexte de page ;
+- correction de la question Unsplash : Entrée accepte désormais le choix par défaut et les espaces ou retours chariot transmis par le terminal sont nettoyés avant validation ;
+- tests de régression couvrant le clic et le clavier sur le contrôle Chat imbriqué ainsi que les saisies Unsplash vide, espacée et terminée par `CR`.
+
+## 3.1.14 — 2026-08-14
+
+- correction fondée sur le diagnostic navigateur de la 3.1.13 (`runtime: false`) : le contrôleur global Chat démarre désormais synchroniquement pendant l’évaluation de la Zimlet, avant `init()` et avant tout enregistrement de point d’extension susceptible d’être interrompu par Zimbra ;
+- maintien permanent de l’entrée **💬 Chat** injectée et du bouton flottant de secours, même si une réponse de profil Talk est momentanément incomplète ; la page Chat reste responsable d’afficher l’état réellement disponible ;
+- accélération de l’installation : les attributions Chat explicites des comptes sont maintenant recherchées en deux requêtes LDAP groupées au lieu de lancer un processus Java `zmprov` pour chaque boîte ;
+- conservation d’un repli automatique vers le balayage historique compte par compte si `searchAccounts` n’est pas disponible, et maintien du diagnostic exhaustif des valeurs héritées des COS ;
+- tests de régression étendus au démarrage synchrone, à la restauration de l’onglet/bouton et aux chemins LDAP rapide et compatible.
+
+## 3.1.13 — 2026-08-14
+
+- correction confirmée par le diagnostic navigateur de la 3.1.12 : le bundle contenait les deux lanceurs Chat et le lien Cloud était détectable, mais le runtime global restait absent car son démarrage dépendait encore de l’appel de `CloudNavigation` par Zimbra ;
+- démarrage du runtime Chat directement depuis `init()` après l’enregistrement des points d’extension, indépendamment de la manière dont Zimbra 10.1.20 matérialise l’entrée Cloud ;
+- conservation de l’entrée Cloud fonctionnelle, de l’injection **💬 Chat** immédiatement après celle-ci et du lanceur flottant de secours ;
+- test de régression vérifiant que le runtime est planifié par l’initialisation avant tout appel manuel du composant Cloud.
+
+## 3.1.12 — 2026-08-14
+
+- ajout d’un véritable accès **💬 Chat** injecté immédiatement après l’entrée Cloud déjà rendue par Zimbra, en réutilisant sa classe visuelle et sans demander un second emplacement de Zimlet ;
+- ouverture fiable de `/modern/cloud/chat` depuis Mail, Agenda, Contacts et Cloud, avec compteur global de messages non lus ;
+- réinsertion automatique de l’accès Chat et du lanceur flottant de secours lorsque Zimbra reconstruit sa barre de navigation ou le corps de la page ;
+- extension du test de navigation à un DOM Zimbra simulé : position après Cloud, cible, clic, badge, arrêt propre et conservation de l’entrée Cloud fonctionnelle.
+
+## 3.1.11 — 2026-08-14
+
+- correction de la régression 3.1.10 qui supprimait l’entrée Cloud sur Zimbra 10.1.20 alors que la route `/modern/cloud` restait accessible directement ;
+- retour de `CloudNavigation` à une fonction renvoyant immédiatement le `MenuItem` attendu par le point d’extension Zimbra ;
+- déplacement du lanceur Chat flottant dans un contrôleur impératif autonome, démarré après le rendu de Cloud et incapable de remplacer ou d’envelopper son entrée de navigation ;
+- ajout d’un test de régression qui appelle explicitement l’entrée Cloud comme une fonction, puis vérifie séparément l’installation et l’arrêt du lanceur Chat.
+
+## 3.1.10 — 2026-08-14
+
+- ajout d’un lanceur Chat flottant global, fourni par la Zimlet Cloud et disponible dans Mail, Agenda et les autres vues Modern, afin de ne plus dépendre de l’affichage d’un second emplacement de navigation personnalisé par Zimbra 10.1.20 ;
+- conservation de la route `/modern/cloud/chat`, du bouton Chat dans Cloud et du paquet de navigation Chat séparé comme complément facultatif sur les versions Zimbra qui l’affichent ;
+- création de conversations Talk de groupe ou directes depuis l’interface, avec sélection du compte Cloud et validation côté serveur ;
+- suppression des messages par l’API Talk officielle lorsque la capacité `delete-messages` et les droits Nextcloud l’autorisent ;
+- filtrage défensif des entrées de message Talk nulles ou incomplètes ;
+- correction du téléchargement ZIP des éléments sélectionnés et des dossiers : utilisation des paramètres WebDAV documentés `accept=zip&files=…` et téléchargement authentifié contrôlé avant création du fichier navigateur ;
+- extension des tests frontend et Java aux nouveaux contrats de création, suppression, lanceur global et archive ZIP.
+
+## 3.1.9 — 2026-08-14
+
+- correction confirmée par le diagnostic navigateur de l’onglet Chat absent : le paquet, la route et le profil Talk étaient correctement chargés, mais Zimbra 10.1.20 supprimait l’entrée de navigation lors de son premier rendu masqué ;
+- rendu immédiat du `MenuItem` Chat afin que Zimbra conserve son emplacement à droite de Cloud, puis masquage uniquement lorsque l’API confirme explicitement qu’aucun profil Talk n’est activé ;
+- ajout d’un test de régression imposant une entrée Chat visible dès le premier rendu du point d’extension, tout en conservant le masquage après confirmation d’un profil sans Talk.
+
+## 3.1.8 — 2026-08-13
+
+- correction de l’onglet Chat encore absent malgré un diagnostic 3.1.7 entièrement vert : Cloud et Chat ne partagent plus la même cible de navigation différenciée uniquement par un fragment d’URL ;
+- ajout d’une route Chat distincte sous l’espace Cloud, `/modern/cloud/chat`, avec prise en charge du rechargement direct sans réintroduire l’ancienne route défaillante `/modern/chat` ;
+- conservation permanente du `MenuItem` Chat dans le point d’extension Zimbra pendant la vérification asynchrone du profil, tout en le gardant visuellement et sémantiquement masqué tant qu’aucun profil Talk n’est activé ;
+- initialisation explicite de la vue fichiers ou Chat selon la route choisie et tests empêchant à l’avenir deux entrées de menu de partager la même cible.
+
+## 3.1.7 — 2026-08-13
+
+- correction du paquet auxiliaire Chat : la configuration de compilation remplaçait l’entrée Webpack interne du SDK et supprimait l’enveloppe `zimlet(function(context) …)`, ce qui provoquait `Cannot read properties of undefined (reading 'preact')` dans `serverConsolidatedZimlets` et masquait tous les onglets personnalisés ;
+- conservation du bootstrap officiel du SDK avec remplacement exclusif de l’alias `zimlet-cli-entrypoint`, afin que Zimbra fournisse les shims Preact avant le chargement de la navigation Chat ;
+- ajout d’un test de paquet qui refuse désormais toute archive Chat dépourvue de l’enveloppe Zimlet et de l’initialisation des shims ;
+- utilisation systématique de `zmprov -l` pour les lectures et modifications COS/comptes, évitant les échecs SOAP/proxy `provisioning_query_failed` observés pendant l’installation 3.1.6.
+
+## 3.1.6 — 2026-08-13
+
+- correction de l’onglet Chat absent pour les utilisateurs rattachés à un COS autre que `default` : l’installateur et le script de réparation attribuent désormais automatiquement `com_nextcloud_connector_chat` à chaque COS et compte où `com_nextcloud_connector` est disponible ;
+- ajout des contrôles `modern_chat_cos` et `modern_chat_accounts` au diagnostic afin de distinguer une Zimlet Chat déployée d’une Zimlet réellement autorisée pour les utilisateurs Cloud ;
+- ajout d’un test simulant plusieurs COS et comptes pour garantir que Chat suit Cloud sans être activé là où la Zimlet principale n’est pas disponible.
+
+## 3.1.5 — 2026-08-12
+
+- séparation de la navigation Modern en deux paquets installés ensemble : `com_nextcloud_connector` fournit exclusivement l’onglet Cloud et `com_nextcloud_connector_chat` fournit exclusivement l’onglet Chat, contournant la limitation constatée sur Zimbra 10.1.20 qui n’affichait que le premier élément d’un même paquet ;
+- conservation de la route stable `/modern/cloud` : l’onglet Chat ouvre `/modern/cloud#chat`, sans réintroduire la route directe `/modern/chat` qui produit une erreur 404 après rechargement ;
+- ajout d’un badge global de messages non lus limité visuellement à `99+`, avec animation d’attention discrète et respect de `prefers-reduced-motion` ;
+- ajout d’un carillon Web Audio généré localement lors de l’augmentation du nombre de messages non lus, sans fichier audio ni service tiers, avec activation/désactivation depuis la barre du Chat ;
+- le son est actif par défaut, ne joue pas pour le stock initial de messages et attend une interaction utilisateur conformément aux restrictions audio des navigateurs ;
+- amélioration du contraste, de la taille, de la bordure et de l’ombre des avatars à initiales dans la liste et l’en-tête de conversation ;
+- diagnostic, réparation, désinstallation, sommes SHA-256, traductions d’administration et tests de livraison étendus aux deux paquets Modern ;
+- maintien du bouton Chat dans le bandeau Cloud et de l’activation chiffrée indépendante pour chacun des profils Nextcloud.
+
+## 3.1.4 — 2026-08-12
+
+- correction validée de la disparition simultanée des onglets Cloud et Chat sous Zimbra 10.1.20 : chaque entrée est désormais enregistrée séparément et retourne directement son propre `MenuItem`, conformément au contrat du point d’extension Zimbra ;
+- suppression du conteneur `span` et de `display: contents`, qui étaient acceptés par le test Preact isolé mais rejetés par la navigation Zimbra réelle ;
+- maintien d’une unique route applicative stable `/modern/cloud` : l’entrée Chat ouvre `/modern/cloud#chat`, tandis qu’un accès direct à l’ancienne adresse `/modern/chat` n’est plus utilisé ;
+- conservation des corrections 3.1.3 relatives aux chargements Talk annulables et aux brouillons distincts par compte Nextcloud et conversation ;
+- durcissement du test de navigation : deux enregistrements indépendants sont maintenant exigés et chacun doit produire directement un `MenuItem`.
+
+## 3.1.3 — 2026-08-12
+
+- correction de la disparition de l’entrée Cloud sous l’ancien runtime Preact : Cloud et Chat sont désormais enfants d’un unique conteneur `display: contents` au lieu d’être renvoyés sous forme de tableau ;
+- conservation de l’apparence de deux onglets adjacents tout en utilisant la route stable `/modern/cloud`, ce qui supprime les erreurs 404 au rechargement direct de `/modern/chat` ;
+- affichage du Chat en plein espace dans la route Cloud, sans réintroduire le bandeau de fichiers au-dessus ;
+- correction du chargement de messages bloqué : toute requête devenue obsolète est annulée lors d’un changement de conversation et ne peut plus verrouiller la suivante ;
+- conservation d’un brouillon distinct par compte Nextcloud et par conversation dans la session du navigateur, avec restauration après navigation vers Mail, Agenda ou un autre onglet Zimbra ;
+- ajout de tests d’exécution Preact pour le conteneur de navigation, l’annulation des chargements et la restauration des brouillons.
+
+## 3.1.2 — 2026-08-12
+
+- rétablissement d’un onglet Chat dédié, de grande taille et placé à côté de Cloud, tout en conservant un seul enregistrement de composant dans le menu Zimbra pour éviter le décalage sur une seconde ligne ;
+- ouverture automatique de l’onglet Chat après activation depuis le bandeau Cloud ;
+- activation désormais indépendante pour chacun des trois profils Nextcloud : seuls les comptes explicitement activés apparaissent dans Chat ;
+- migration sûre du réglage global 3.1.1 vers le seul compte Nextcloud qui était actif au moment de la mise à jour ;
+- correction des miniatures GIF avec suivi borné des redirections Nextcloud vers une liste stricte de CDN Giphy ;
+- interdiction explicite de transmettre le mot de passe d’application ou l’en-tête Authorization Nextcloud au CDN Giphy ;
+- ajout de tests serveur pour la migration multi-compte, les redirections GIF et l’absence de fuite d’identifiants.
+
+## 3.1.1 — 2026-08-12
+
+- suppression de l’onglet Chat global qui pouvait forcer la navigation Zimbra sur une seconde ligne ; seul l’onglet Cloud reste enregistré dans le menu principal ;
+- intégration du Chat directement dans l’espace Cloud, avec retour aux fichiers sans quitter la route Cloud ;
+- ajout, à côté de Diagnostic, d’une commande d’activation et de désactivation avec contrôle préalable de la disponibilité réelle de Nextcloud Talk ;
+- conservation chiffrée du choix d’activation par compte Zimbra, donc persistante entre les navigateurs et les ordinateurs ;
+- maintien du compteur non lu dans le bouton Chat du bandeau Cloud, sans polling lorsque la fonction est désactivée ;
+- correction de l’écran Chat vide causé par un fragment JSX incompatible avec l’ancien runtime Preact de certaines interfaces Zimbra Modern ;
+- ajout d’un test d’exécution du rendu d’une conversation Talk et maintien de la parité des onze langues.
+
+## 3.1.0 — 2026-08-12
+
+- ajout d’un onglet Chat natif dans Zimbra Modern, activé uniquement lorsqu’un des trois comptes Nextcloud connectés expose réellement Talk ;
+- agrégation des conversations et des compteurs non lus de tous les comptes, avec compteurs dans le menu et par conversation ;
+- lecture et envoi de messages, réponses, réactions, marquage comme lu et actualisation suspendue lorsque le navigateur est masqué ;
+- partage de fichiers Cloud dans Talk via le type OCS officiel `10` ;
+- sélecteur GIF facultatif via `integration_giphy`, avec proxy d’images strictement limité à l’origine Nextcloud ;
+- exclusion explicite des appels audio, de la visioconférence et des API de signalisation ;
+- isolation du client Java Talk et du composant Modern Chat afin de préserver le fonctionnement de l’onglet Cloud ;
+- traductions des nouvelles fonctions dans les onze langues et tests automatisés des contrats OCS Talk.
+
 ## 3.0.2 — 2026-08-10
 
+- préparation de la première bêta publique : README anglais et français entièrement réécrits autour des fonctions actuelles, sans dupliquer l’historique ;
+- ajout d’une matrice explicite séparant validations manuelles, partielles, automatisées et non effectuées ;
+- ajout d’une checklist GitHub/Zeta Alliance, de notes de release bêta et de modèles d’issues communautaires ;
+- renforcement des exclusions de publication et contrôle de l’absence de traces d’infrastructure privée dans la construction ;
 - correction de l’envoi WebDAV par blocs qui s’arrêtait après le premier bloc avec `t is not defined` et restait affiché à 1 % ;
 - téléchargement des versions depuis le `href` exact et validé renvoyé par Nextcloud, avec nouvelle vérification de l’existence juste avant le transfert ;
 - restauration des versions par le flux DAV officiel `MOVE .../versions/{fileId}/{versionId}` vers `.../restore/target` ;

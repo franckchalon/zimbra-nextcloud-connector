@@ -1,91 +1,124 @@
 # zimbra-nextcloud-connector
 
-This Zimlet integrates Nextcloud directly into the Zimbra Modern UI, providing file browsing, uploads, media previews, public read-only links, trash management, and collaborative document editing. It supports both ONLYOFFICE and Euro-Office through their respective Nextcloud connectors.
+> **Public beta — version 3.1.23.** Test on a staging Zimbra server and keep a recoverable backup before production use. See [TESTING.md](TESTING.md) for the exact validation status.
 
-Created and maintained by **Franck Chalon** as an independent community project.
+`zimbra-nextcloud-connector` is an independent community Zimlet that brings Nextcloud file management, collaborative document editing and Nextcloud Talk messaging into the Zimbra Modern UI.
 
-Version 3.0.2 is a corrective stability release. It supports French (default), US English, Spanish (Spain and Argentina), Italian, German, Portuguese (Portugal and Brazil), Hindi (India), Malay (Malaysia) and Russian (Russia). Administrative scripts use the configured language; the Modern UI follows each Zimbra user's locale and falls back to French.
+Created and maintained by **Franck Chalon**. This project is not an official Zimbra, Nextcloud, ONLYOFFICE or Euro-Office product.
 
-## Highlights in 3.0.2
+[Documentation française](README_FR.md) · [Test status](TESTING.md) · [Changelog](CHANGELOG.md) · [Security](SECURITY.md) · [Contributing](CONTRIBUTING.md)
 
-- chunk uploads no longer stop after their first block because of a frontend translation error;
-- historical versions are downloaded from the exact WebDAV resource returned by Nextcloud and restored through Nextcloud's `restore/target` DAV endpoint;
-- both `install.sh` and `configure.sh` explicitly ask whether remote Unsplash backgrounds may be enabled; unattended installs can set `CLOUD_UNSPLASH=true|false`;
-- read-only Nextcloud links are inserted through Zimbra's official `insertAtCaret` compose API, with a visible manual-copy fallback instead of a focus-dependent Clipboard call;
-- the installer now explicitly offers optional Unsplash backgrounds while keeping the privacy-first local gradient as the default;
-- managed-account integration tests cover OCS user creation, app-password exchange, WebDAV verification, encrypted persistence, duplicate protection and rollback deletion.
+## Main features
 
-- capability-aware interface and WebDAV permission/lock enforcement, so unavailable or forbidden actions are hidden or disabled;
-- smart views for favorites, recent files, shares and public links, plus advanced account/folder search;
-- resumable-style Nextcloud chunk uploads with folder drag-and-drop, progress, cancel, retry and explicit collision policies;
-- ZIP downloads for folders and same-folder selections, without caching Cloud files in Zimbra;
-- an enriched details workspace for ownership, tags, checksums, permissions, shares, versions, comments and activity when supported by the connected server;
-- secure Nextcloud Login Flow v2, with manual app-password sign-in retained as a fallback;
-- a richer **Paperclip → Cloud** picker with account switching, favorites, recent files, global search, Zimbra-derived attachment limits and read-only link insertion;
-- optional administrator-provided document templates, payload pagination, per-account/global request limits and cross-process locks for shared profile storage;
-- built-in user diagnostics plus read-only administrator diagnostic and profile-lifecycle scripts;
-- privacy-first visuals: polished local gradients by default, while remote Unsplash backgrounds are disabled unless the administrator explicitly enables them.
+- Browse up to three Nextcloud accounts from the **Cloud** tab.
+- Manual app-password login or Nextcloud Login Flow v2.
+- Optional administrator-managed Nextcloud account provisioning.
+- Encrypted server-side profile storage, available from every user device.
+- Grid/list views, breadcrumbs, sorting, folder/account search, favorites and smart views.
+- Upload files and folders, chunked uploads, progress, cancel/retry and collision handling.
+- Create folders and OOXML/OpenDocument files: `.docx`, `.xlsx`, `.pptx`, `.odt`, `.ods`, `.odp`.
+- Rename, copy, move, multi-select, delete to trash, restore and permanently delete.
+- Quota display, details, permissions, locks, checksums, tags, shares, versions, comments and activity when exposed by Nextcloud.
+- Create read-only public links, optionally protected by a password and expiration date.
+- Preview images, audio and video in persistent movable/resizable windows with next/previous navigation and media fullscreen.
+- Edit documents through the matching Nextcloud **ONLYOFFICE** or **Euro-Office** connector; office settings may be overridden per Cloud account.
+- Keep Zimbra Mail, Calendar and other navigation available while an editor or media preview remains open.
+- Add Cloud files as email attachments or insert read-only links through **Paperclip → Cloud**.
+- Floating **💬 Chat** button in Mail, Calendar, Contacts and Cloud. It opens a compact panel with current conversations, unread counts, recent messages, quick replies and read markers without leaving the current Zimbra view. The ↗ command opens the full workspace on `/modern/cloud/chat`. No Chat tab is injected into Zimbra's top bar, and the native Cloud entry is never hidden, resized or duplicated.
+- Per-Nextcloud-profile enable/disable control next to Diagnostics, encrypted server-side and checked against the currently selected Talk account before activation.
+- Only explicitly enabled Cloud accounts appear in Chat; enabling one profile never enables the other connected profiles.
+- Conversations from up to three enabled Cloud accounts, creation of group or direct conversations, message deletion according to Nextcloud Talk permissions, global/per-conversation unread badges, text messages, replies, reactions and Cloud-file sharing.
+- A gentle unread animation and a locally generated Web Audio chime for newly received unread messages. Sound is enabled by default, can be disabled from Chat, contains no third-party audio asset and follows browser autoplay restrictions.
+- A separate browser-session draft is preserved for every account/conversation while navigating between Zimbra tabs.
+- Optional GIF picker through the Nextcloud `integration_giphy` app, with debounced search, cursor-based infinite scrolling, validated Giphy CDN redirects and no Nextcloud credential forwarding.
+- Chat only: no audio/video calls and no signaling API are included; the Talk high-performance backend is not required by this Zimlet's messaging feature.
+- Optional Unsplash backgrounds; disabled by default for privacy.
+- French, US English, Spanish (Spain/Argentina), Italian, German, Portuguese (Portugal/Brazil), Hindi, Malay and Russian.
 
-Office and media windows remain persistent, movable and resizable below Zimbra's navigation. Up to three encrypted Nextcloud profiles and per-profile ONLYOFFICE/Euro-Office settings are preserved across upgrades. New documents support `.docx`, `.xlsx`, `.pptx`, `.odt`, `.ods` and `.odp`, including regional document locales. Collabora is intentionally not included in this release.
+Collabora, Talk audio/video calls and the Zimbra Classic UI are not supported.
 
-The package has local automated coverage for Java compilation, security-sensitive parsers, translations, installer safety, frontend integration and persistent windows. A real staging deployment matching the target Zimbra, Nextcloud and office-server versions is still required before production rollout or community publication.
+## Requirements
 
-## Nextcloud account modes
+- A Zimbra server with the Modern UI and root access to the mailbox node.
+- A reachable HTTPS Nextcloud server with WebDAV and OCS APIs.
+- For Chat, the Nextcloud Talk (`spreed`) app must be enabled. `integration_giphy` is optional.
+- A Nextcloud app password is recommended for manual connections.
+- For editing, the corresponding Nextcloud ONLYOFFICE or Euro-Office connector and Document Server must already be installed and configured with matching URL/JWT settings.
+- Network routes must allow Zimbra to reach Nextcloud and the office connector APIs; the Document Server must reach Nextcloud callbacks and file URLs.
 
-- `manual`: every Zimbra user connects any compatible Nextcloud account with its URL, username and preferably an app password.
-- `managed`: an administrator configures one Nextcloud server and service account. On first use, Cloud provisions a personal Nextcloud account whose username is the complete Zimbra email address. The initial random password is displayed once; only a separate encrypted app password is retained by the Zimlet.
-
-## Office providers
-
-The installer supports ONLYOFFICE or Euro-Office, with JWT recommended and an unsigned mode limited to isolated testing. A user may override those settings per Cloud account from the Zimlet. The corresponding Nextcloud office app must be configured by its administrator with exactly the same provider, Document Server URL and JWT secret; the Zimlet cannot remotely change Nextcloud administrator settings. Editing requests the official configuration from that app, so users join the same collaborative session only when their openings use the same Document Server and document session.
+The current beta has been manually exercised on **Zimbra 10.1.20 GA 4893 / Ubuntu 18.04.6** with one live Nextcloud environment and both ONLYOFFICE and Euro-Office. This is not a general compatibility claim. Exact server-version reports from other environments are welcome.
 
 ## Installation
 
-Run on the Zimbra mailbox server as root:
+Copy the release ZIP to the Zimbra mailbox server, then run as `root`:
 
 ```bash
 cd /tmp
-unzip zimbra-nextcloud-connector-v3.0.2.zip
-cd zimbra-nextcloud-connector-3.0.2
+sha256sum -c zimbra-nextcloud-connector-v3.1.23.zip.sha256
+unzip zimbra-nextcloud-connector-v3.1.23.zip
+cd zimbra-nextcloud-connector-3.1.23
 ./install.sh
+./diagnose.sh
 ```
 
-The installer builds the Java extension against the exact Zimbra libraries, restarts mailboxd once, verifies the extension version, then deploys the Modern Zimlet. Existing encrypted user profiles and configuration are preserved during upgrades.
+The installer:
 
-After installation, `./diagnose.sh` performs a read-only operational check and `./lifecycle-report.sh` identifies encrypted profiles that may belong to removed Zimbra accounts. Neither command prints stored secrets. Advanced options such as custom templates, shared storage and remote backgrounds are documented in [README_FR.md](README_FR.md) and remain conservative by default.
+1. asks for the administrative language and privacy/account/office choices;
+2. builds the Java extension against the exact Zimbra libraries on that server;
+3. installs and verifies the extension;
+4. deploys the paired Cloud and Chat Modern packages and mirrors Cloud's COS/account assignments to Chat, using grouped LDAP account searches with a compatibility fallback;
+5. preserves the existing configuration and encrypted user profiles during upgrades.
 
-Verify the server extension:
+After installation, close all Zimbra tabs, open a new browser session and sign in. Only the native **Cloud** entry should appear in Zimbra's top bar. The floating **💬 Chat** button opens quick chat; ↗ and the Cloud-header Chat button open the full workspace. `/modern/cloud` always opens Files, and a temporary Talk failure produces a concise Retry state instead of exposing the proxy's HTML error page. The first click or key press unlocks notification audio as required by browsers. The first user connection should use Nextcloud Login Flow or an app password.
+
+## Operational checks
+
+Run the read-only diagnostic after installation, after an upgrade and after reproducing a problem:
 
 ```bash
-curl -sS http://127.0.0.1:8080/service/extension/nextcloud-connector/public/ping
+cd /tmp/zimbra-nextcloud-connector-3.1.23
+./diagnose.sh
 ```
 
-Expected result:
+Expected final line:
 
-```json
-{"status":"ok","version":"3.0.2"}
+```text
+RESULT OK
 ```
 
-For complete security, network, account-mode, troubleshooting and recovery instructions, see [README_FR.md](README_FR.md). Contributions and translation corrections are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md).
+Watch connector log events while testing:
 
-## Publishing checklist
+```bash
+tail -n 0 -F /opt/zimbra/log/mailbox.log | grep --line-buffered -iE 'NextcloudConnector|nextcloud-connector|Erreur Nextcloud Connector|fr\.franckchalon\.zimbra\.nextcloud'
+```
 
-Use a public GitHub repository as the source of truth. Publish the source, BSD-3-Clause license, tagged release, release ZIP and `SHA256SUMS`; never publish a real `nextcloud-zimlet.properties` file or credentials. The Zeta Alliance gallery and Zimbra Community forum can then link to the GitHub release. Keep unreleased builds clearly marked and use the issue tracker for compatibility reports.
+These checks show known server-side failures; they cannot prove the absence of every bug. Browser console/network errors and an end-to-end staging test are also required before production use.
 
-## AI assistance
+## Data and security
 
-This project was designed and developed with the assistance of artificial intelligence tools.
+- Stored Nextcloud/office secrets are encrypted with AES-GCM and are not returned by the profile API.
+- The configuration is installed as `/opt/zimbra/conf/nextcloud-zimlet.properties` with `zimbra:zimbra` ownership and mode `0600`.
+- Cloud previews and ordinary downloads are streamed and are not kept as a file cache in Zimbra.
+- A file attached to a draft/message becomes Zimbra mailbox data and counts against Zimbra quotas.
+- Public links created by this Zimlet default to read-only.
+- Private/loopback Nextcloud targets are blocked by default to reduce SSRF risk.
+- Unsplash is off by default because enabling it makes user browsers contact a third party.
 
-AI was used to help with code generation, debugging, documentation, translations and project structuring. The final implementation, testing, configuration and publication were performed and validated by the project maintainer.
+Do not commit or publish production configuration, encrypted profiles, credentials, JWT secrets, cookies, logs containing tokens or customer data.
 
-## Disclaimer
+## Build from source
 
-This is an independent community project and is not affiliated with, endorsed by, sponsored by, or officially supported by Zimbra.
+```bash
+npm ci
+./build-release.sh
+```
 
-The name "Zimbra" is used solely to indicate compatibility with the Zimbra platform.
+The release build runs frontend, installer and Java tests before producing the bundle and checksum under `dist/`. Build-time npm dependencies are not shipped in the deployable ZIP.
 
-Zimbra and related trademarks are the property of their respective owners.
+## Community release
+
+GitHub should remain the source of truth for code, issues, checksums and releases. Mark this release as a **pre-release** named `3.1.23 Public Beta 2`, then link that release from the Zeta Alliance Zimlet Gallery and the Zimbra Community forum. Follow [PUBLISHING.md](PUBLISHING.md) before publishing.
 
 ## License
 
-BSD-3-Clause. Copyright 2026 Franck Chalon.
+BSD-3-Clause — Copyright 2026 Franck Chalon.

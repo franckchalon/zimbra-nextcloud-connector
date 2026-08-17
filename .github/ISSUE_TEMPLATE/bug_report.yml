@@ -1,0 +1,88 @@
+name: Bug report
+description: Report a reproducible problem without disclosing secrets
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for testing the public beta. Never include passwords, app passwords, JWT secrets, cookies, Authorization headers, encrypted profiles, private keys or customer data.
+  - type: input
+    id: connector-version
+    attributes:
+      label: Connector version and release tag
+      placeholder: "3.0.2 / v3.0.2-beta.1"
+    validations:
+      required: true
+  - type: input
+    id: zimbra
+    attributes:
+      label: Zimbra version, edition and topology
+      description: Include OS and whether this is a single- or multi-mailbox deployment.
+    validations:
+      required: true
+  - type: input
+    id: nextcloud
+    attributes:
+      label: Nextcloud version and relevant storage backend
+    validations:
+      required: true
+  - type: input
+    id: office
+    attributes:
+      label: Office connector and Document Server versions
+      placeholder: "ONLYOFFICE or Euro-Office; write not applicable if unrelated"
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and client OS
+    validations:
+      required: true
+  - type: dropdown
+    id: account-mode
+    attributes:
+      label: Nextcloud account mode
+      options:
+        - Personal / manual
+        - Managed provisioning
+        - Not applicable
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      placeholder: "1. …\n2. …\n3. …"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Sanitized diagnostics and logs
+      description: Include `diagnose.sh`, relevant mailbox.log lines and browser console/network errors after removing all sensitive values.
+      render: shell
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Safety confirmation
+      options:
+        - label: I tested on non-critical data or have a recoverable backup.
+          required: true
+        - label: I removed all secrets, tokens, personal data and private infrastructure details.
+          required: true
+        - label: I checked existing issues for the same problem.
+          required: true

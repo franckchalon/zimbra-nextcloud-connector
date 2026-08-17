@@ -1,0 +1,37 @@
+.label {
+	display: inline-flex;
+	position: relative;
+	align-items: center;
+	gap: 5px;
+}
+
+.badge {
+	display: inline-flex;
+	min-width: 18px;
+	height: 18px;
+	padding: 0 5px;
+	align-items: center;
+	justify-content: center;
+	border: 2px solid #fff;
+	border-radius: 999px;
+	background: #dc3545;
+	box-shadow: 0 2px 7px rgba(156, 27, 42, .35);
+	color: #fff;
+	font-size: 10px;
+	font-weight: 800;
+	line-height: 1;
+}
+
+.labelUnread {
+	animation: chatAttention 1.45s ease-in-out infinite;
+}
+
+@keyframes chatAttention {
+	0%, 72%, 100% { opacity: 1; transform: translateY(0); }
+	82% { opacity: .62; transform: translateY(-1px); }
+	91% { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.labelUnread { animation: none; }
+}

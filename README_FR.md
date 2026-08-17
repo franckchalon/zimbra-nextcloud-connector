@@ -1,8 +1,8 @@
 # zimbra-nextcloud-connector
 
-> **Bêta publique — version 3.0.2.** Installez-la d’abord sur une préproduction et conservez une sauvegarde récupérable avant tout usage en production. La matrice exacte des validations se trouve dans [TESTING.md](TESTING.md).
+> **Bêta publique — version 3.1.23.** Installez-la d’abord sur une préproduction et conservez une sauvegarde récupérable avant tout usage en production. La matrice exacte des validations se trouve dans [TESTING.md](TESTING.md).
 
-`zimbra-nextcloud-connector` est une Zimlet communautaire indépendante qui intègre la gestion de fichiers Nextcloud et l’édition collaborative dans l’interface Modern de Zimbra.
+`zimbra-nextcloud-connector` est une Zimlet communautaire indépendante qui intègre la gestion de fichiers Nextcloud, l’édition collaborative et la messagerie Nextcloud Talk dans l’interface Modern de Zimbra.
 
 Projet créé et maintenu par **Franck Chalon**. Il ne s’agit pas d’un produit officiel de Zimbra, Nextcloud, ONLYOFFICE ou Euro-Office.
 
@@ -57,6 +57,23 @@ Projet créé et maintenu par **Franck Chalon**. Il ne s’agit pas d’un produ
 - Ajout de plusieurs fichiers comme pièces jointes dans les limites Zimbra.
 - Insertion de liens publics en lecture seule dans le corps du message.
 
+### Chat Nextcloud Talk — disponible depuis la 3.1.5
+
+- Bouton flottant **💬 Chat** disponible dans Mail, Agenda, Contacts et Cloud. Il ouvre un mini-chat sans quitter la vue courante : conversations en cours, compteurs non lus, derniers messages, réponse rapide et marquage comme lu. La commande ↗ ouvre l’espace Chat complet sur `/modern/cloud/chat`. Aucun onglet Chat n’est injecté dans la barre Zimbra et l’entrée Cloud native n’est ni masquée, ni redimensionnée, ni dupliquée.
+- L’adresse `/modern/cloud` ouvre toujours les fichiers, indépendamment de la dernière conversation consultée. Une indisponibilité temporaire de Talk affiche un message court avec **Réessayer** sans bloquer l’espace Cloud ni exposer la page HTML du proxy.
+- Activation et désactivation depuis le bandeau Cloud, à côté de **Diagnostic**, séparément pour chaque compte Nextcloud connecté.
+- À l’activation, la Zimlet vérifie Talk sur le compte Cloud actuellement sélectionné, mémorise ce choix dans le profil chiffré puis ouvre directement l’espace Chat.
+- L’accès global Chat reste visible afin de ne jamais bloquer la navigation si une réponse de profil est momentanément incomplète ; dans l’espace Chat, seules les connexions explicitement activées participent aux conversations et changer de compte Cloud n’active jamais automatiquement les autres.
+- Compteur global de messages non lus dans la navigation et compteur par conversation, avec affichage `99+` au-delà.
+- Animation d’attention discrète lorsqu’un message est non lu, désactivée automatiquement si le navigateur demande une réduction des mouvements.
+- Petit carillon généré localement avec Web Audio lorsqu’un nouveau message augmente le compteur. Aucun fichier sonore ni service tiers n’est utilisé ; le son, actif par défaut, est désactivable dans le Chat et respecte le blocage audio des navigateurs avant la première interaction.
+- Création de conversations de groupe ou directes, lecture et envoi de messages texte, réponses, réactions et suppression selon les droits imposés par Nextcloud Talk, sans iframe Nextcloud.
+- Brouillon conservé séparément dans chaque conversation pendant la session du navigateur, y compris après un passage dans Mail, Agenda ou un autre onglet Zimbra.
+- Partage d’un fichier du compte Cloud courant dans une conversation Talk.
+- Sélecteur GIF facultatif via l’application Nextcloud `integration_giphy`, avec recherche automatique et chargement de pages supplémentaires en arrivant au bas de la grille ; les miniatures suivent uniquement les redirections validées vers les CDN Giphy autorisés, sans leur transmettre l’authentification Nextcloud.
+- Actualisation économe : pause lorsque l’onglet du navigateur est masqué et polling Talk court.
+- **Aucun appel audio, aucune visioconférence et aucune API de signalisation ne sont intégrés.** Le backend haute performance Talk n’est donc pas un prérequis pour le chat de cette Zimlet.
+
 ### Interface et langues
 
 - Dégradé local par défaut ; photographies Unsplash facultatives et désactivées par défaut.
@@ -67,28 +84,29 @@ Projet créé et maintenu par **Franck Chalon**. Il ne s’agit pas d’un produ
 
 - Serveur Zimbra avec interface Modern et accès `root` au nœud mailbox.
 - Serveur Nextcloud HTTPS joignable depuis Zimbra, avec WebDAV et OCS.
+- Pour le Chat : application Nextcloud Talk (`spreed`) active pour au moins un compte. `integration_giphy` est facultative.
 - Mot de passe d’application Nextcloud recommandé en mode manuel.
 - Pour l’édition : application Nextcloud `onlyoffice` ou `eurooffice` installée et configurée, ainsi que le Document Server correspondant.
 - Zimbra doit joindre Nextcloud et ses API de connecteur bureautique ; le Document Server doit joindre Nextcloud pour télécharger le document et envoyer ses callbacks.
 
 La bêta a été essayée manuellement sur **Zimbra 10.1.20 GA 4893 sous Ubuntu 18.04.6**, avec une installation Nextcloud réelle et des essais ONLYOFFICE puis Euro-Office. Cela ne constitue pas une certification des autres versions. Les versions exactes de Nextcloud, du Document Server et du navigateur doivent accompagner chaque rapport de compatibilité.
 
-Non pris en charge : interface Zimbra Classic, Collabora, HTTP public non chiffré et navigateurs mobiles comme environnement d’édition certifié.
+Non pris en charge : interface Zimbra Classic, Collabora, appels audio/vidéo Talk, HTTP public non chiffré et navigateurs mobiles comme environnement certifié.
 
 ## Installation
 
 Téléchargez sur GitHub les deux fichiers de la même préversion :
 
-- `zimbra-nextcloud-connector-v3.0.2.zip`
-- `zimbra-nextcloud-connector-v3.0.2.zip.sha256`
+- `zimbra-nextcloud-connector-v3.1.23.zip`
+- `zimbra-nextcloud-connector-v3.1.23.zip.sha256`
 
 Copiez-les dans `/tmp` sur le serveur mailbox Zimbra, puis exécutez en `root` :
 
 ```bash
 cd /tmp
-sha256sum -c zimbra-nextcloud-connector-v3.0.2.zip.sha256
-unzip zimbra-nextcloud-connector-v3.0.2.zip
-cd zimbra-nextcloud-connector-3.0.2
+sha256sum -c zimbra-nextcloud-connector-v3.1.23.zip.sha256
+unzip zimbra-nextcloud-connector-v3.1.23.zip
+cd zimbra-nextcloud-connector-3.1.23
 ./install.sh
 ./diagnose.sh
 ```
@@ -107,15 +125,16 @@ L’installateur demande notamment :
 
 En mode personnel, chaque utilisateur choisit librement ses serveurs Nextcloud. En mode géré, l’administrateur renseigne aussi le Nextcloud commun, un compte de service dédié, un groupe/quota/langue facultatifs.
 
-L’installation recompile l’extension Java contre les bibliothèques exactes du serveur, redémarre `mailboxd` une fois, contrôle la version chargée puis déploie l’interface Modern. Une mise à jour préserve la configuration et les profils chiffrés.
+L’installation recompile l’extension Java contre les bibliothèques exactes du serveur, redémarre `mailboxd` une fois, contrôle la version chargée puis déploie automatiquement les deux paquets Modern Cloud et Chat. Elle attribue aussi le module Chat à tous les COS et comptes existants qui disposent déjà de Cloud, au lieu de le laisser uniquement sur le COS Zimbra `default`. Une mise à jour préserve la configuration et les profils chiffrés.
 
 Après l’installation :
 
 1. fermez toutes les fenêtres Zimbra ;
 2. ouvrez une nouvelle session du navigateur ;
-3. connectez-vous puis ouvrez **Cloud** ;
-4. utilisez de préférence le Login Flow ou un mot de passe d’application Nextcloud ;
-5. testez sur un compte pilote avant d’activer la Zimlet pour une COS entière.
+3. connectez-vous : seule l’entrée **Cloud** native doit apparaître dans la barre principale. Le bouton flottant **💬 Chat**, en bas à droite, ouvre le mini-chat ; la commande ↗ ou le bouton Chat du bandeau Cloud ouvre l’espace complet. Sélectionnez un compte Nextcloud et cliquez sur **Activer le Chat** si nécessaire ;
+4. cliquez ou appuyez une fois sur une touche dans Zimbra pour autoriser le son de notification, conformément aux règles des navigateurs ;
+5. utilisez de préférence le Login Flow ou un mot de passe d’application Nextcloud ;
+6. testez sur un compte pilote avant d’activer la Zimlet pour une COS entière.
 
 ## Mise à jour et reconfiguration
 
@@ -124,7 +143,7 @@ Pour mettre à jour, décompressez la nouvelle archive dans un nouveau dossier e
 Pour modifier le mode de comptes, le moteur bureautique, le JWT ou Unsplash :
 
 ```bash
-cd /tmp/zimbra-nextcloud-connector-3.0.2
+cd /tmp/zimbra-nextcloud-connector-3.1.23
 ./configure.sh
 su - zimbra -c 'zmmailboxdctl restart'
 ```
@@ -140,7 +159,7 @@ zimbra:zimbra 600
 ### Diagnostic principal
 
 ```bash
-cd /tmp/zimbra-nextcloud-connector-3.0.2
+cd /tmp/zimbra-nextcloud-connector-3.1.23
 ./diagnose.sh
 ```
 
@@ -150,7 +169,7 @@ Résultat attendu :
 RESULT OK
 ```
 
-Le script vérifie `mailboxd`, le point de contrôle HTTP, la version, l’unicité du JAR, les permissions, les clés de configuration, le déploiement Modern, le stockage des profils et les erreurs récentes du connecteur.
+Le script vérifie `mailboxd`, le point de contrôle HTTP, la version, l’unicité du JAR, les permissions, les clés de configuration, le déploiement des paquets Modern Cloud et Chat, le stockage des profils et les erreurs récentes du connecteur.
 
 ### Surveillance pendant un test
 
@@ -173,7 +192,7 @@ curl -fsS http://127.0.0.1:8080/service/extension/nextcloud-connector/public/pin
 ```
 
 ```json
-{"status":"ok","version":"3.0.2"}
+{"status":"ok","version":"3.1.23"}
 ```
 
 Ces commandes détectent les erreurs connues côté serveur, mais ne prouvent pas mathématiquement la stabilité. Il faut aussi vérifier la console et l’onglet Réseau du navigateur, effectuer les scénarios de [TESTING.md](TESTING.md), surveiller CPU/RAM/disque et répéter les essais après chaque mise à jour Zimbra, Nextcloud ou Document Server.
@@ -202,7 +221,7 @@ Ne supprimez pas automatiquement les profils marqués `ORPHAN?` : un alias, une 
 Avant une bêta, créez un snapshot ou une sauvegarde testée. Pour retirer la Zimlet et son extension :
 
 ```bash
-cd /tmp/zimbra-nextcloud-connector-3.0.2
+cd /tmp/zimbra-nextcloud-connector-3.1.23
 ./uninstall.sh
 ```
 
@@ -229,6 +248,7 @@ Consultez [SECURITY.md](SECURITY.md) avant toute publication ou rapport de vuln�
 - Les grandes charges, les très gros fichiers, les installations Zimbra multi-mailbox, le basculement et les différents stockages externes Nextcloud ne sont pas certifiés.
 - Aucun audit de sécurité indépendant ni test d’intrusion n’a encore été réalisé.
 - Une mise à jour d’une API Zimbra, Nextcloud, ONLYOFFICE ou Euro-Office peut demander une adaptation.
+- L’intégration Talk 3.1.23 possède des tests automatisés de contrat API, mais doit encore être validée en conditions réelles sur votre version de Nextcloud/Talk avant publication comme version stable.
 
 ## Signaler un problème
 
@@ -254,15 +274,9 @@ npm ci
 
 Le script exécute les tests frontend, installateur et Java, puis produit l’archive et son fichier SHA-256 dans `dist/`. Les dépendances npm servent uniquement à la compilation et ne sont pas embarquées dans l’archive installable.
 
-## Assistance par intelligence artificielle
-
-Ce projet a été conçu et développé avec l'aide d'outils d'intelligence artificielle.
-
-L'IA a été utilisée pour assister la génération de code, le débogage, la documentation, les traductions et la structuration du projet. L'implémentation finale, les tests, la configuration et la publication ont été réalisés et validés par le mainteneur du projet.
-
 ## Publication communautaire
 
-GitHub doit être la référence pour le code, les issues, les tags, les archives et leurs sommes SHA-256. Pour cette première livraison, créez une release nommée **3.0.2 Public Beta 1**, cochez **Set as a pre-release**, puis référencez-la dans la galerie Zeta Alliance et sur le forum Zimbra. La procédure complète se trouve dans [PUBLISHING.md](PUBLISHING.md).
+GitHub doit être la référence pour le code, les issues, les tags, les archives et leurs sommes SHA-256. Créez une release nommée **3.1.23 Public Beta 2**, cochez **Set as a pre-release**, puis référencez-la dans la galerie Zeta Alliance et sur le forum Zimbra. La procédure complète se trouve dans [PUBLISHING.md](PUBLISHING.md).
 
 ## Licence
 
