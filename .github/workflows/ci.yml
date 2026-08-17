@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build and test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '18.20.8'
+          cache: npm
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '11'
+
+      - name: Install system tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes ripgrep zip unzip
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Check distributed dependency security
+        run: npm audit --omit=dev
+
+      - name: Build, test and package release
+        run: bash ./build-release.sh
+
+      - name: Check formatting
+        run: git diff --check
+
+      - name: Ensure build did not modify tracked files
+        run: test -z "$(git status --porcelain)"
+
+      - name: Upload test release
+        uses: actions/upload-artifact@v4
+        with:
+          name: zimbra-nextcloud-connector-test-release
+          path: |
+            dist/zimbra-nextcloud-connector-v*.zip
+            dist/zimbra-nextcloud-connector-v*.zip.sha256
+          if-no-files-found: error
+          retention-days: 7
