@@ -174,8 +174,13 @@ export default class Chat extends Component {
 	componentDidMount() {
 		this.mounted = true;
 		this.eventTarget = globalThis.window || globalThis;
+		this.visibilityDocument = globalThis.document;
 		if (this.eventTarget && typeof this.eventTarget.addEventListener === 'function') {
 			this.eventTarget.addEventListener(TALK_SOUND_EVENT, this.updateSoundPreference);
+			this.eventTarget.addEventListener('focus', this.handleBrowserReturn);
+		}
+		if (this.visibilityDocument && typeof this.visibilityDocument.addEventListener === 'function') {
+			this.visibilityDocument.addEventListener('visibilitychange', this.handleBrowserReturn);
 		}
 		this.loadOverview(true);
 		this.overviewTimer = setInterval(() => this.loadOverview(false), 20000);
@@ -192,9 +197,21 @@ export default class Chat extends Component {
 		this.gifRequestId = number(this.gifRequestId) + 1;
 		if (this.eventTarget && typeof this.eventTarget.removeEventListener === 'function') {
 			this.eventTarget.removeEventListener(TALK_SOUND_EVENT, this.updateSoundPreference);
+			this.eventTarget.removeEventListener('focus', this.handleBrowserReturn);
+		}
+		if (this.visibilityDocument && typeof this.visibilityDocument.removeEventListener === 'function') {
+			this.visibilityDocument.removeEventListener('visibilitychange', this.handleBrowserReturn);
 		}
 		this.persistSession();
 	}
+
+	handleBrowserReturn = () => {
+		if (!this.mounted || (this.visibilityDocument && this.visibilityDocument.hidden)) return;
+		const now = Date.now();
+		if (now - Number(this.browserReturnAt || 0) < 1000) return;
+		this.browserReturnAt = now;
+		this.loadOverview(true);
+	};
 
 	updateSoundPreference = event => {
 		const detail = event && event.detail || {};
@@ -259,9 +276,11 @@ export default class Chat extends Component {
 
 	loadOverview = async initial => {
 		if (globalThis.document && globalThis.document.hidden && !initial) return;
+		const requestId = Number(this.overviewRequestId || 0) + 1;
+		this.overviewRequestId = requestId;
 		try {
 			const overview = await api('/api/talk/overview', { profileId: '' });
-			if (!this.mounted) return;
+			if (!this.mounted || requestId !== this.overviewRequestId) return;
 			const accounts = asArray(overview.accounts).filter(account => account.available);
 			let profileId = this.state.profileId;
 			let token = this.state.token;
@@ -278,7 +297,7 @@ export default class Chat extends Component {
 			});
 			this.emitOverview(overview);
 		} catch (error) {
-			if (!this.mounted) return;
+			if (!this.mounted || requestId !== this.overviewRequestId) return;
 			this.setState({ loading: false, error: error.message || this.t('talkError') });
 		}
 	};

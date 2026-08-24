@@ -3,6 +3,8 @@ set -euo pipefail
 
 project_dir="$(cd "$(dirname "$0")" && pwd)"
 version="$(node -p "require('$project_dir/package.json').version")"
+zimlet_version="$(node -p "require('$project_dir/package.json').zimletVersion")"
+[[ "$zimlet_version" =~ ^[0-9]+(\.[0-9]+){1,3}$ ]]
 frontend_zip="$project_dir/pkg/com_nextcloud_connector.zip"
 chat_frontend_zip="$project_dir/pkg-chat/com_nextcloud_connector_chat.zip"
 
@@ -27,7 +29,8 @@ for (const [language, dictionary] of Object.entries(dictionaries)) {
 
 const sourceFiles = [
   'src/components/app/index.js', 'src/components/app/advanced.js',
-  'src/components/cloud-attacher/index.js', 'src/components/cloud-attacher/compose-bridge.js',
+	  'src/components/cloud-attacher/index.js', 'src/components/cloud-attacher/compose-bridge.js',
+	  'src/components/cloud-picker/index.js', 'src/classic-entry.js',
 	  'src/components/floating-windows/index.js', 'src/components/chat/index.js', 'src/index.js', 'src/chat-nav-index.js'
 ];
 const singularUsages = new Set();
@@ -187,12 +190,12 @@ grep -Fq 'mediaFiles: this.mediaItemsForFloatingWindow()' "$project_dir/src/comp
 grep -Fq 'grid-template-columns: repeat(8, minmax(0, 1fr));' "$project_dir/src/components/app/style.less"
 grep -Fq "plugins.register('slot::compose-attachment-action-menu'" "$project_dir/src/index.js"
 grep -Fq "plugins.register('slot::compose-footer-right-btn', ComposeInsertionBridge)" "$project_dir/src/index.js"
-grep -Fq 'insertComposeContent(this.props.composeBridge' "$project_dir/src/components/cloud-attacher/index.js"
+grep -Fq 'insertComposeContent(composeBridge, editor' "$project_dir/src/components/cloud-attacher/index.js"
 if grep -Fq 'navigator.clipboard.writeText' "$project_dir/src/components/cloud-attacher/index.js"; then
   echo "Erreur : l’insertion de liens ne doit plus dépendre du focus de l’API Clipboard." >&2
   exit 1
 fi
-grep -Fq "editor.addAttachments(files, true)" "$project_dir/src/components/cloud-attacher/index.js"
+grep -Fq "onAttachFiles={files => editor.addAttachments(files, true)}" "$project_dir/src/components/cloud-attacher/index.js"
 grep -Fq "const quota = await api('/api/quota')" "$project_dir/src/components/app/index.js"
 grep -Fq "<option value=\"created\">{this.t('sortByCreation')}</option>" "$project_dir/src/components/app/index.js"
 grep -Fq 'requestFullscreen' "$project_dir/src/components/floating-windows/index.js"
@@ -228,6 +231,8 @@ grep -Fq "this.header.addEventListener('mousedown', event => this.startMove(even
 grep -Fq 'event.target.closest(`.${style.headerActions}`)' "$project_dir/src/components/floating-windows/index.js"
 grep -Fq "this.ownerDocument.addEventListener('mousemove', moveWindow, true)" "$project_dir/src/components/floating-windows/index.js"
 grep -Fq '.header {' "$project_dir/src/components/floating-windows/style.less"
+grep -Fq '.editorWindow .header {' "$project_dir/src/components/floating-windows/style.less"
+grep -Fq 'min-height: 36px;' "$project_dir/src/components/floating-windows/style.less"
 grep -Fq "['w', style.resizeHandleW]" "$project_dir/src/components/floating-windows/index.js"
 grep -Fq '.resizeHandleSE::after' "$project_dir/src/components/floating-windows/style.less"
 grep -Fq 'top: 64px;' "$project_dir/src/components/floating-windows/style.less"
@@ -275,9 +280,18 @@ grep -Fq 'this.composeBridge = resolveComposeBridge(editor)' "$project_dir/src/c
 grep -Fq 'context.zimletRedux.actions.zimlets.addModal' "$project_dir/src/components/cloud-attacher/index.js"
 grep -Fq 'footer={false}' "$project_dir/src/components/cloud-attacher/index.js"
 grep -Fq 'class={style.modalDialog}' "$project_dir/src/components/cloud-attacher/index.js"
+grep -Fq "target.addEventListener('focus', this.handleProfileReturn)" "$project_dir/src/components/app/index.js"
+grep -Fq "this.profileDocument.addEventListener('visibilitychange', this.handleProfileReturn)" "$project_dir/src/components/app/index.js"
+grep -Fq "this.profileEventTarget.addEventListener('focus', this.handleProfileReturn)" "$project_dir/src/components/cloud-picker/index.js"
+grep -Fq "this.visibilityDocument.addEventListener('visibilitychange', this.handleBrowserReturn)" "$project_dir/src/components/chat/index.js"
+grep -Fq "settingsPersist: 'Ces réglages sont liés à votre compte Zimbra.'" "$project_dir/src/i18n.js"
+grep -Fq ":global([data-nextcloud-classic-root='picker']) .picker" "$project_dir/src/components/cloud-attacher/style.less"
+grep -Fq ":global([data-nextcloud-classic-root='picker']) > div" "$project_dir/src/components/cloud-attacher/style.less"
+grep -Fq 'frNextcloudClassicPickerView' "$project_dir/classic/fr_franckchalon_nextcloud_classic.js"
+grep -Fq 'pickerView.setSize(dimensions.width, dimensions.height)' "$project_dir/classic/fr_franckchalon_nextcloud_classic.js"
 grep -Fq '<ActionMenuItem icon="cloud"' "$project_dir/src/components/cloud-attacher/index.js"
 grep -Fq "{translate(language, 'cloud')}" "$project_dir/src/components/cloud-attacher/index.js"
-grep -Fq 'const result = await api(`/api/list?path=' "$project_dir/src/components/cloud-attacher/index.js"
+grep -Fq 'const result = await api(`/api/list?path=' "$project_dir/src/components/cloud-picker/index.js"
 grep -Fq 'onContextMenu={event => this.openContextMenu(event, file)}' "$project_dir/src/components/app/index.js"
 grep -Fq 'bottom: 40px;' "$project_dir/src/components/app/style.less"
 grep -Fq "this.t('details')" "$project_dir/src/components/app/index.js"
@@ -320,8 +334,8 @@ if grep -Fq 'X-NC-Files' "$project_dir/server/src/fr/franckchalon/zimbra/nextclo
   echo "Erreur : le téléchargement ZIP ne doit plus dépendre des en-têtes WebDAV répétés." >&2
   exit 1
 fi
-grep -Fq "api('/api/mail-limits')" "$project_dir/src/components/cloud-attacher/index.js"
-grep -Fq 'insertReadOnlyLinks' "$project_dir/src/components/cloud-attacher/index.js"
+grep -Fq "api('/api/mail-limits')" "$project_dir/src/components/cloud-picker/index.js"
+grep -Fq 'insertReadOnlyLinks' "$project_dir/src/components/cloud-picker/index.js"
 grep -Fq "collisionPolicy: 'keep-both'" "$project_dir/src/components/app/index.js"
 grep -Fq '.folderPickerPolicy' "$project_dir/src/components/app/style.less"
 grep -Fq 'const primaryLabel =' "$project_dir/src/components/app/index.js"
@@ -350,8 +364,8 @@ grep -Fq "languageFromContext(context, 'fr')" "$project_dir/src/index.js"
 grep -Fq 'X-Zimbra-Zimlet-Language' "$project_dir/src/api.js"
 grep -Fq 'X-Nextcloud-Profile' "$project_dir/src/api.js"
 grep -Fq "api('/api/profile/select'" "$project_dir/src/components/app/index.js"
-grep -Fq "api('/api/profile/select'" "$project_dir/src/components/cloud-attacher/index.js"
-grep -Fq "setActiveProfile(profile.activeProfileId" "$project_dir/src/components/cloud-attacher/index.js"
+grep -Fq "api('/api/profile/select'" "$project_dir/src/components/cloud-picker/index.js"
+grep -Fq "setActiveProfile(profile.activeProfileId" "$project_dir/src/components/cloud-picker/index.js"
 grep -Fq "api('/api/profile/delete'" "$project_dir/src/components/app/index.js"
 grep -Fq "this.t('addCloudAccount')" "$project_dir/src/components/app/index.js"
 grep -Fq 'profile={settingsProfile}' "$project_dir/src/components/app/index.js"
@@ -368,11 +382,11 @@ if grep -REq "routes\.slugs|/email/nextcloud|route\(['\"]\/email\/(compose|Inbox
 fi
 
 unzip -p "$frontend_zip" com_nextcloud_connector.xml \
-  | grep -Fq "version=\"$version\""
+  | grep -Fq "version=\"$zimlet_version\""
 unzip -p "$frontend_zip" com_nextcloud_connector.xml \
   | grep -Fq 'label="Cloud"'
 unzip -p "$chat_frontend_zip" com_nextcloud_connector_chat.xml \
-  | grep -Fq "version=\"$version\""
+  | grep -Fq "version=\"$zimlet_version\""
 unzip -p "$chat_frontend_zip" com_nextcloud_connector_chat.xml \
   | grep -Fq 'label="Chat"'
 chat_javascript="$(unzip -p "$chat_frontend_zip" index.js)"

@@ -7,6 +7,32 @@ cloud_config_path="/opt/zimbra/conf/nextcloud-zimlet.properties"
 source "$script_dir/i18n.sh"
 cloud_read_language
 
+settings_only="false"
+requested_ui_mode=""
+for argument in "$@"; do
+  case "$argument" in
+    --settings-only) settings_only="true" ;;
+    --ui=modern|--ui=classic|--ui=both) requested_ui_mode="${argument#--ui=}" ;;
+    --help|-h)
+      cat <<'EOF'
+Usage: sudo ./configure.sh [--settings-only] [--ui=modern|--ui=classic|--ui=both]
+
+Without options, server settings are updated and the script then asks which
+Zimbra web interfaces to keep installed. With --ui, only the selected web
+interfaces are changed; the backend configuration and mailboxd are untouched.
+--settings-only updates only server settings (used internally by install.sh).
+EOF
+      exit 0
+      ;;
+    *) printf 'Unknown option: %s\n' "$argument" >&2; exit 2 ;;
+  esac
+done
+
+if [[ "$settings_only" == "true" && -n "$requested_ui_mode" ]]; then
+  echo "--settings-only and --ui cannot be used together." >&2
+  exit 2
+fi
+
 if [[ "${EUID}" -ne 0 ]]; then
   cloud_msg root_required >&2
   exit 1
@@ -18,6 +44,10 @@ storage_dir="/opt/zimbra/data/nextcloud-zimlet"
 if [[ ! -d /opt/zimbra ]]; then
   cloud_msg zimbra_missing >&2
   exit 1
+fi
+
+if [[ -n "$requested_ui_mode" ]]; then
+  exec "$script_dir/install.sh" "--ui=$requested_ui_mode" --ui-only
 fi
 
 read_property() {
@@ -37,6 +67,10 @@ storage_shared="${storage_shared:-false}"
 templates_dir="$(read_property templates.dir || true)"
 remote_backgrounds="$(read_property ui.remote_backgrounds || true)"
 remote_backgrounds="${remote_backgrounds:-false}"
+install_mode="$(read_property ui.install_mode || true)"
+case "$install_mode" in modern|classic|both) ;; *) install_mode="modern" ;; esac
+node_role="$(read_property deployment.node_role || true)"
+case "$node_role" in primary|backend-only) ;; *) node_role="primary" ;; esac
 
 ask() {
   local label="$1"
@@ -247,6 +281,9 @@ temporary="$(mktemp /opt/zimbra/conf/nextcloud-zimlet.properties.tmp.XXXXXX)"
   printf 'templates.dir=%s\n' "$templates_dir"
   printf 'ui.remote_backgrounds=%s\n' "$remote_backgrounds"
   printf 'ui.default_language=%s\n' "$UI_LANGUAGE"
+  # Installer-owned values must survive a later standalone reconfiguration.
+  printf 'ui.install_mode=%s\n' "$install_mode"
+  printf 'deployment.node_role=%s\n' "$node_role"
   printf 'zimbra.public_url=%s\n' "${zimbra_url%/}"
   printf 'nextcloud.account_mode=%s\n' "$nextcloud_account_mode"
   printf 'managed.nextcloud_url=%s\n' "${managed_nextcloud_url%/}"
@@ -299,4 +336,11 @@ if [[ "$nextcloud_account_mode" == "managed" ]]; then
   cloud_msgf quota_summary "${managed_quota:+ ($managed_quota)}"; echo
 else
   cloud_msg personal_summary
+fi
+
+if [[ "$settings_only" != "true" ]]; then
+  CLOUD_UI_MODE_DEFAULT="$install_mode"
+  unset CLOUD_UI_MODE
+  cloud_select_ui_mode
+  "$script_dir/install.sh" "--ui=$CLOUD_UI_MODE" --ui-only
 fi

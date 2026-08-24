@@ -4,7 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const AdmZip = require('adm-zip');
-const { version } = require('./package.json');
+const { zimletVersion } = require('./package.json');
 
 const root = __dirname;
 const buildDir = path.join(root, 'build-chat');
@@ -51,7 +51,7 @@ const resources = fs.readdirSync(buildDir)
 	.sort()
 	.map(file => file.endsWith('.js') ? `\t<include>${file}</include>` : `\t<resource>${file}</resource>`);
 const descriptor = [
-	`<zimlet name="${zimletName}" version="${version}" description="${description}" label="${label}" zimbraXZimletCompatibleSemVer=">=0.0.1">`,
+	`<zimlet name="${zimletName}" version="${zimletVersion}" description="${description}" label="${label}" zimbraXZimletCompatibleSemVer=">=0.0.1">`,
 	...resources,
 	'</zimlet>'
 ].join('\n');

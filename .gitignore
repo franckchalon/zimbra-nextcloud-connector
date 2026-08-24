@@ -19,4 +19,6 @@ nextcloud-zimlet.properties
 *.enc
 build-chat/
 pkg-chat/
+classic-build/
+pkg-classic/
 server/.zimbra-build-test.*/

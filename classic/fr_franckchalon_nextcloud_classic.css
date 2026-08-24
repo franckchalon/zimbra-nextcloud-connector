@@ -1,0 +1,168 @@
+.frNextcloudCloudIcon,
+.ImgfrNextcloudCloudIcon {
+	background-image: url('nextcloud-classic.svg') !important;
+	background-position: center !important;
+	background-repeat: no-repeat !important;
+	background-size: 18px 18px !important;
+}
+
+.frNextcloudChatIcon,
+.ImgfrNextcloudChatIcon {
+	background-image: url('nextcloud-classic-chat.svg') !important;
+	background-position: center !important;
+	background-repeat: no-repeat !important;
+	background-size: 18px 18px !important;
+}
+
+.frNextcloudClassicRoot {
+	box-sizing: border-box;
+	height: calc(100vh - 112px);
+	min-height: 520px;
+	width: 100%;
+	overflow: auto;
+	background: #edf6fb;
+}
+
+.frNextcloudClassicPickerView {
+	box-sizing: border-box !important;
+	position: relative;
+	min-width: 0 !important;
+	min-height: 0 !important;
+	overflow: hidden !important;
+}
+
+.frNextcloudClassicPicker {
+	box-sizing: border-box;
+	min-height: 0;
+	width: 100%;
+	overflow: hidden;
+	background: #fff;
+}
+
+.frNextcloudClassicPicker[data-nextcloud-classic-root="picker"] > div {
+	box-sizing: border-box;
+	height: 100% !important;
+	min-height: 0 !important;
+}
+
+.frNextcloudClassicError {
+	margin: 24px;
+	padding: 18px;
+	border: 1px solid #d9a7a3;
+	border-radius: 10px;
+	background: #fff4f3;
+	color: #7b1f19;
+}
+
+#fr-nextcloud-classic-chat-launcher {
+	position: fixed;
+	right: 22px;
+	bottom: 20px;
+	z-index: 12000;
+	min-width: 76px;
+	height: 38px;
+	padding: 0 14px;
+	border: 1px solid #8bc9d0;
+	border-radius: 999px;
+	background: #138f98;
+	box-shadow: 0 8px 24px rgba(17, 72, 86, .28);
+	color: #fff;
+	font: 700 13px/36px Arial, sans-serif;
+	cursor: pointer;
+}
+
+#fr-nextcloud-classic-chat-launcher:hover,
+#fr-nextcloud-classic-chat-launcher:focus {
+	background: #0d7780;
+	outline: 2px solid rgba(19, 143, 152, .25);
+	outline-offset: 2px;
+}
+
+#fr-nextcloud-classic-chat-launcher .frNextcloudClassicUnread {
+	display: inline-block;
+	min-width: 18px;
+	height: 18px;
+	margin-left: 6px;
+	padding: 0 4px;
+	border-radius: 999px;
+	background: #d83f52;
+	color: #fff;
+	font-size: 10px;
+	line-height: 18px;
+	text-align: center;
+	vertical-align: middle;
+}
+
+#fr-nextcloud-classic-chat-panel {
+	position: fixed;
+	right: 22px;
+	bottom: 66px;
+	z-index: 12001;
+	display: none;
+	width: min(860px, calc(100vw - 44px));
+	height: min(680px, calc(100vh - 112px));
+	min-width: 560px;
+	min-height: 420px;
+	overflow: hidden;
+	resize: both;
+	border: 1px solid #9ebbc9;
+	border-radius: 14px;
+	background: #f4f9fc;
+	box-shadow: 0 20px 70px rgba(19, 50, 67, .34);
+}
+
+#fr-nextcloud-classic-chat-panel.frNextcloudClassicChatOpen {
+	display: flex;
+	flex-direction: column;
+}
+
+.frNextcloudClassicChatHeader {
+	height: 42px;
+	min-height: 42px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 0 8px 0 14px;
+	background: #14556d;
+	color: #fff;
+	font: 700 13px/1 Arial, sans-serif;
+}
+
+.frNextcloudClassicChatHeader strong {
+	flex: 1;
+}
+
+.frNextcloudClassicChatHeader button {
+	width: 30px;
+	height: 30px;
+	border: 1px solid rgba(255, 255, 255, .4);
+	border-radius: 8px;
+	background: rgba(255, 255, 255, .08);
+	color: #fff;
+	font: 700 16px/28px Arial, sans-serif;
+	cursor: pointer;
+}
+
+.frNextcloudClassicChatContent {
+	min-height: 0;
+	flex: 1;
+	overflow: hidden;
+}
+
+/* The shared Talk screen normally occupies a full browser viewport. In the
+ * Classic quick-chat shell it must instead follow the resizable panel. */
+#fr-nextcloud-classic-chat-root[data-nextcloud-classic-root="chat"] > div {
+	height: 100% !important;
+	min-height: 0 !important;
+}
+
+@media (max-width: 680px) {
+	#fr-nextcloud-classic-chat-panel {
+		inset: 70px 8px 8px;
+		width: auto;
+		height: auto;
+		min-width: 0;
+		min-height: 0;
+		resize: none;
+	}
+}

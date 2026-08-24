@@ -1,108 +1,76 @@
-# Public beta test status — 3.1.23
+# Public beta test status — 3.2.0-beta.7
 
-This document separates automated checks from real end-to-end validation. A green automated suite does not certify compatibility with every Zimbra, Nextcloud, browser, storage or office-server version.
+This matrix separates automated verification from real-server validation. “Verified” never means certified for every Zimbra, Nextcloud or browser version.
 
-Status legend: **Verified** = manually exercised in the current live test environment; **Partial** = exercised but not across all variants; **Automated only** = covered with local/fake transports; **Not verified** = no reliable end-to-end result yet.
+## Automated release gate
 
-## Environment exercised manually
+`./build-release.sh` must succeed from a clean checkout. It performs, at minimum:
 
-| Component | Environment | Status |
+- pinned npm installation and Modern production packaging;
+- standalone Classic UI production build and Classic Zimlet packaging;
+- shared file-picker, compose-link, API-response, Chat-rendering, navigation, floating-window and GIF tests;
+- Classic host/runtime tests for application mounting, Quick Chat and compose attachments/links;
+- installer, UI-mode, COS/account-assignment, backend-only, reconfiguration and safety tests;
+- Java compilation against test stubs and server unit tests;
+- internal archive checksums, final ZIP creation and SHA-256 output.
+
+The CI workflow runs the same release build on Ubuntu and rejects tracked build output or missing release artifacts.
+
+## Compatibility matrix
+
+| Area | Status | Evidence and remaining work |
 | --- | --- | --- |
-| Zimbra | 10.1.20 GA 4893 on Ubuntu 18.04.6, single mailbox node | Verified |
-| Zimbra UI | Modern UI | Verified |
-| Browser | Chromium-family browser on Windows | Partial; exact version and other browsers still needed |
-| Nextcloud | One live HTTPS installation | Partial; exact version must be recorded in the GitHub compatibility report |
-| ONLYOFFICE | One configured live environment | Partial; exact connector/Document Server versions still needed |
-| Euro-Office | One configured live environment | Partial; exact connector/Document Server versions still needed |
-| Topology | Single Zimbra mailbox node and one active Cloud environment at a time | Verified only for this topology |
+| Modern Cloud navigation and files | Manually exercised + automated | Previous 3.1.23 behavior retained; shared components and release tests pass. Re-test this beta after the new Classic packaging/installer changes |
+| Modern full Talk and Quick Chat | Manually exercised + automated | Text conversations, creation, replies, reactions, deletion, GIFs, unread state and bounded error handling are covered; no call/signaling code |
+| Modern compose attachments/links | Automated + prior manual use | Shared picker now feeds the Modern compose bridge; re-test attachment limits and HTML/plain-text signatures |
+| Classic Cloud/Chat tabs and workspaces | Manually exercised + automated | Both workspaces were displayed and opened on Zimbra FOSS 10.1.18. Beta.7 keeps the same bootstrap and adds profile refresh when the tab becomes active again |
+| Classic full Talk and Quick Chat | Manually exercised + automated | Beta.4 full Talk and the resizable Quick Chat were exercised with a live Talk-enabled profile. A second non-Talk profile is ignored by the Talk workspace as designed |
+| Classic compose attachments/links | Native menu manually exercised; beta.7 completion retest required | Beta.6 live testing confirmed **Cloud** in Zimbra's native **Attach** menu and file selection, but the footer was pushed below the viewport. Beta.7 computes an explicit native-dialog height, keeps the footer visible and sends selected files through Zimbra's native attachment API. Verify one/multiple attachments, link, draft, send and received message on the test server |
+| Files, search, uploads and mutations | Automated + previous Modern manual use | Validate WebDAV behavior against exact Nextcloud/storage versions, including external storage and large chunked uploads |
+| ZIP download | Automated contract + previous fix | Selected items are constrained to one folder and the authenticated response is downloaded as a Blob. Re-test file, folder and mixed selection in both clients |
+| ONLYOFFICE / Euro-Office | Previously exercised in Modern | Shared App is used in Classic. Beta.7 retains beta.6's compact connector title bar; retest both editors with exact connector/Document Server versions |
+| Installer: Modern / Classic / both | Automated | Argument, environment and interactive-mode paths are tested; requires one real install/upgrade/uninstall cycle for each relevant server family |
+| COS and explicit-account assignment parity | Automated | Diagnostic verifies companion packages follow Modern Cloud where a Modern assignment source exists |
+| Additional mailbox `--backend-only` | Automated installer path only | Not a HA certification. Test mailbox routing/moves, local profile storage and key distribution in an actual multi-mailbox lab |
+| Personal multiple Nextcloud profiles | Implemented | Up to three profiles per Zimbra account. Test heterogeneous Nextcloud versions/capabilities |
+| Managed multi-tenant domain/COS mapping | Not implemented | Secure mapping/secret design remains future work; do not report issue #8 as completed |
+| Talk audio/video/signaling | Deliberately excluded | The suites reject call/signaling scope; the connector provides messaging only |
+| Mobile browsers | Not certified | Responsive behavior is best effort; no mobile support claim |
 
-Before publishing the beta, record the missing exact versions without publishing hostnames or credentials.
+## Known manually exercised environment
 
-## Functional matrix
+- Zimbra Modern: 10.1.20 GA 4893 on Ubuntu 18.04.6, single mailbox node.
+- Zimbra Classic: 10.1.18 GA 4200001 on Ubuntu 22.04.5. Cloud and Chat displayed; files, full Talk and Quick Chat loaded against live profiles; **Attach > Cloud** opened and selected files in beta.6. Beta.7 footer/attachment completion, tab-return refresh and compact editor header remain to be retested.
+- Browser: Chromium-family client on Windows.
+- One live HTTPS Nextcloud environment.
+- Live ONLYOFFICE and Euro-Office document opening/editing.
 
-| Area | Status | Evidence / remaining work |
-| --- | --- | --- |
-| Install, on-server Java build, mailboxd restart and Modern deployment | Verified | Repeated upgrades completed; `diagnose.sh` returned `RESULT OK` on Zimbra 10.1.20 |
-| Manual Nextcloud app-password login | Verified | Live WebDAV authentication and browsing exercised |
-| Nextcloud Login Flow v2 | Automated only | Same-origin validation and flow handling covered; needs live multi-browser test |
-| Managed account provisioning | Automated only | OCS creation, app-password exchange, duplicate refusal and rollback use a fake transport; no live managed Nextcloud test |
-| Encrypted profile persistence | Verified / automated | AES-GCM, migration and multiple-profile storage covered; persistence across sessions exercised |
-| Three simultaneous Nextcloud profiles | Partial | UI/storage tests exist; needs live test with three independent servers/accounts |
-| Folder navigation, list/grid, sorting and search | Verified | Live use exercised; advanced filters need more server/version coverage |
-| Favorites and smart views | Partial | Capability-gated implementation tested locally; all share types not exercised live |
-| Normal upload | Verified | Live upload exercised |
-| Chunk/folder upload, cancel/retry and collision choices | Partial | Corrected and covered by build assertions; needs large-file and interrupted-network campaign |
-| Create folder and six office formats | Verified / partial | OOXML and OpenDocument creation exercised; all regional locales not opened manually |
-| Rename, copy, move and bulk actions | Verified / partial | Core actions exercised; 200-item limits and every collision combination not load-tested |
-| Download, ZIP archive and version download | Partial | WebDAV's documented `accept=zip&files=` contract and authenticated browser-blob workflow are covered; large ZIP and external-storage variants need live testing |
-| Trash restore/delete/empty | Partial | DAV parsing automated; every destructive path needs a dedicated disposable live account |
-| Public read-only links | Verified | Link creation/insertion exercised; password/expiration and every Nextcloud policy combination need coverage |
-| User/group/email/federated/circle shares | Not verified | Capability-gated implementation exists; requires appropriate live server configuration |
-| Versions restore | Verified | Live restoration exercised |
-| Comments and activity | Not verified | API/parser paths exist; server apps and permissions vary |
-| Image/audio/video preview, navigation, move/resize/fullscreen | Verified | Live UI iterations exercised in Chromium |
-| Persistent editor/media while navigating Zimbra | Verified | Mail/Calendar navigation exercised without destroying the window |
-| ONLYOFFICE editing/co-editing | Verified / partial | Live opening and editing exercised; concurrent multi-user matrix and failure recovery still needed |
-| Euro-Office editing/co-editing | Verified / partial | Live opening and editing exercised; version combinations and concurrent matrix still needed |
-| Per-profile office provider/settings | Partial | Encryption/config tests exist; three distinct live Document Servers not yet exercised |
-| Paperclip → Cloud attachments | Partial | Compose integration exercised through iterative testing; large/multiple-account and all Zimbra limits need more coverage |
-| Read-only link insertion in compose | Verified | Official compose insertion path and fallback covered |
-| Quota and storage reporting | Verified / automated | Live quota display and read-only scripts exercised |
-| Eleven UI/admin languages | Automated only | Key parity and build usage pass; native-speaker review remains required |
-| Optional Unsplash backgrounds | Partial | Configuration paths tested; privacy/network policy variants not broadly tested |
-| Multi-mailbox shared storage and failover | Not verified | Do not claim support until tested with a suitable shared POSIX filesystem |
-| External Nextcloud storage backends | Not verified | SMB/S3/WebDAV/object-store behavior may differ |
-| Talk capability detection and account aggregation | Automated only | OCS capability and conversation-v4 envelopes use a fake transport. Interactive OCS calls are bounded separately from file transfers; a live Talk version matrix is still required |
-| Talk enable/disable and Chat access | Partial | Per-profile encrypted preference and distinct full routes are covered. Version 3.1.23 registers only the native Cloud `MenuItem`, makes `/modern/cloud` deterministically open Files, and exposes Talk through the floating quick-chat panel and its full-workspace action. The regression test models separate sandbox/host documents and verifies zero Chat navigation registrations or DOM mutations, legacy-runtime replacement, launcher hiding on both full-Chat URL forms, conversation listing, quick reply, GIF search/send/display, 504 recovery and full-workspace navigation; final post-install visual validation remains required |
-| Global unread badge and sound | Automated only | The floating launcher derives its unread badge from the global count or the conversation totals and clears the selected conversation locally after its read marker succeeds. The full-workspace sound preference is covered. Browser autoplay means the first click/key press is required; arrival sound and visual placement still need live validation |
-| Talk messages, creation, deletion, drafts, replies, unread/read marker and polling | Automated only | Official room creation/delete-message contracts, null-entry filtering, response normalization, polling cancellation and separate drafts are covered; server permissions/time limits and live multi-user behavior still need validation |
-| Talk reactions | Automated only | Official reaction-v1 contract covered; permissions and older Talk variants need live testing |
-| Talk Cloud-file sharing | Automated only | Official OCS share type 10 is covered; live permissions/external storage not yet tested |
-| GIF picker through integration_giphy | Automated only | Debounced search, cursor-based infinite scrolling in both interfaces, duplicate removal, retry without losing existing results, `/apps/` and `/index.php/apps/` same-origin preview paths, fallback from a broken Nextcloud thumbnail, validated redirect to an allow-listed Giphy CDN and absence of Nextcloud credentials on the CDN request are covered; live Giphy policy/API-key configuration not tested |
-| Talk audio/video/signaling | Deliberately excluded | The release suite rejects call/signaling endpoints; version 3.1.23 is chat only |
-| Firefox, Safari and mobile browsers | Not verified | Community reports requested |
-| Independent security audit / penetration test | Not performed | Public beta must state this explicitly |
+Before publishing this beta, record the exact Nextcloud, Talk, office connector, Document Server, Zimbra Classic and browser versions used by the new test server.
 
-## Automated release suite
+## Required Classic beta test
 
-`./build-release.sh` currently runs:
+On a disposable or recoverable Zimbra FOSS test server:
 
-- paired Cloud/Chat Zimlet frontend builds and packaging;
-- locale dictionary parity and translation-key usage checks for all eleven locales;
-- stable Modern Cloud/Chat routes, a native Cloud `MenuItem`, sandbox-to-parent floating quick chat with no injected tab, translated per-profile activation, unread behavior, compose attachment/link and persistent-window assertions;
-- legacy Preact runtime rendering of populated and null-filtered Talk messages, conversation creation UI, cancellation of stale loads and draft restoration per conversation;
-- runtime tests for image, audio, video and office floating windows;
-- installer syntax, safety, version, privacy-choice, backup-location, grouped LDAP account synchronization with legacy fallback and multi-COS Chat-assignment checks;
-- Java compilation with local stubs and validation of the on-Zimbra build script;
-- Java tests for JSON/XML hardening, path handling, AES-GCM, JWT, profile migration, office settings, account provisioning workflow, localized templates, OCS parsing, WebDAV metadata, versions, trash, search, bulk destinations, Talk contracts and request limiting;
-- release ZIP creation and SHA-256 generation.
+1. run `./install.sh --ui=classic`, then `./diagnose.sh`;
+2. sign into Classic after fully closing prior Zimbra sessions;
+3. confirm that the separate Cloud and Chat tabs are visible, then open Cloud and connect one profile;
+4. browse/search/upload/download/rename/copy/move/trash/restore files;
+5. create and edit at least one supported office document;
+6. attach one and several Cloud files in HTML and plain-text messages;
+7. insert a read-only public link before a signature and send it;
+8. open Quick Chat, switch conversations, reply, create a conversation and delete an allowed message;
+9. open the full Chat workspace and confirm the Quick Chat panel does not duplicate it;
+10. install again with `--ui=both`, verify both clients, then test upgrade and uninstall behavior.
 
-The deployable package has no npm runtime dependency and `npm audit --omit=dev` reports 0 vulnerabilities. The official Zimlet CLI build tool still has known transitive development advisories; they are not shipped, and their status is documented in `SECURITY.md`.
+Capture sanitized `diagnose.sh` output, browser console/network errors and relevant `/opt/zimbra/log/mailbox.log` lines. Never attach credentials, cookies, authorization headers, profile files or master keys.
 
-## Minimum beta acceptance test
+## Beta exit criteria
 
-Use a disposable user and non-critical files:
+The Classic feature should remain beta until all of the following are true:
 
-1. Install, run `./diagnose.sh`, sign in and verify Mail/Calendar still work.
-2. Connect with Login Flow and separately with an app password.
-3. Browse/search/sort; upload a small file, a folder and a file larger than one chunk.
-4. Create all six document formats and edit one file with two concurrent users.
-5. Preview image/audio/video, navigate Zimbra, resize/move, then close.
-6. Copy/move/rename/select/delete files and restore one from trash.
-7. Create a read-only public link and insert it into a message.
-8. Attach several Cloud files through Paperclip → Cloud and send to a test recipient.
-9. Restore and download a historical version.
-10. Run `./diagnose.sh` again and review server logs plus browser console/network errors.
-11. From Mail, confirm that **Cloud** opens the files normally and remains the only connector entry in the top bar. Click the floating **💬 Chat** button, open a current conversation, send a quick reply, then use ↗ to open `/modern/cloud/chat`. With two Talk users, create a group and a direct conversation, exchange text messages, delete an allowed message, reply, react, mark read and share a Cloud file; if `integration_giphy` is installed, send one GIF. Confirm one sound on a new unread message, then disable sound with the bell, and confirm that no call or camera/microphone control appears.
-12. Select two files in the same Cloud folder, download the ZIP and verify that it opens and contains both files; repeat with one folder.
-
-## Criteria before calling the release stable
-
-- At least two supported Zimbra patch levels and two Nextcloud major versions.
-- Live Login Flow, managed provisioning and three-profile tests.
-- ONLYOFFICE and Euro-Office version matrix with concurrent editing.
-- Firefox plus another Chromium platform; mobile behavior documented.
-- Multi-hour upload/download and concurrency campaign, including failure recovery.
-- Native review of translations or clearly identified community-reviewed locales.
-- No unresolved high-severity security findings and a private reporting channel enabled.
-- At least several weeks of beta feedback without mailboxd/navigation regressions.
+- successful real-server installation on at least two declared Zimbra FOSS/Classic versions or an explicitly narrowed supported matrix;
+- file, compose, Talk and office smoke tests pass in Classic;
+- Modern regression test passes on the established environment;
+- one upgrade from 3.1.23 and one clean uninstall are verified;
+- any compatibility limitation is documented in the README and release notes;
+- no open confirmed blocker involving data loss, credential exposure or inability to access Zimbra Mail.

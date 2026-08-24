@@ -138,6 +138,23 @@ function savePreference(key, value) {
 	catch (error) {}
 }
 
+function profileFingerprint(profile) {
+	if (!profile || typeof profile !== 'object') return '';
+	return JSON.stringify({
+		configured: Boolean(profile.configured),
+		activeProfileId: String(profile.activeProfileId || ''),
+		talkAnyEnabled: Boolean(profile.talkAnyEnabled),
+		accounts: (Array.isArray(profile.accounts) ? profile.accounts : []).map(account => ({
+			id: String(account && account.id || ''),
+			label: String(account && account.label || ''),
+			username: String(account && account.username || ''),
+			nextcloudUrl: String(account && account.nextcloudUrl || ''),
+			active: Boolean(account && account.active),
+			talkEnabled: Boolean(account && account.talkEnabled)
+		}))
+	});
+}
+
 function initialState(scope, initialView) {
 	const workspace = restoredWorkspace(scope);
 	return {
@@ -994,7 +1011,15 @@ export default class App extends Component {
 	componentDidMount() {
 		this.mounted = true;
 		const target = globalThis.window || globalThis;
-		if (target && typeof target.addEventListener === 'function') target.addEventListener(CLOUD_VIEW_EVENT, this.handleCloudView);
+		this.profileEventTarget = target;
+		this.profileDocument = globalThis.document;
+		if (target && typeof target.addEventListener === 'function') {
+			target.addEventListener(CLOUD_VIEW_EVENT, this.handleCloudView);
+			target.addEventListener('focus', this.handleProfileReturn);
+		}
+		if (this.profileDocument && typeof this.profileDocument.addEventListener === 'function') {
+			this.profileDocument.addEventListener('visibilitychange', this.handleProfileReturn);
+		}
 		initializeFloatingWindows(globalThis.document);
 		attachFloatingWindowCallbacks(this.props.workspaceScope, {
 			onPreviewClose: this.handleFloatingPreviewClose,
@@ -1059,8 +1084,14 @@ export default class App extends Component {
 
 	componentWillUnmount() {
 		this.mounted = false;
-		const target = globalThis.window || globalThis;
-		if (target && typeof target.removeEventListener === 'function') target.removeEventListener(CLOUD_VIEW_EVENT, this.handleCloudView);
+		const target = this.profileEventTarget || globalThis.window || globalThis;
+		if (target && typeof target.removeEventListener === 'function') {
+			target.removeEventListener(CLOUD_VIEW_EVENT, this.handleCloudView);
+			target.removeEventListener('focus', this.handleProfileReturn);
+		}
+		if (this.profileDocument && typeof this.profileDocument.removeEventListener === 'function') {
+			this.profileDocument.removeEventListener('visibilitychange', this.handleProfileReturn);
+		}
 		this.detachContextMenuListener();
 		detachFloatingWindowCallbacks(this.props.workspaceScope);
 		setCloudRouteActive(this.props.workspaceScope, false, this.pageNode && this.pageNode.ownerDocument);
@@ -1132,10 +1163,25 @@ export default class App extends Component {
 		}
 	};
 
-	async loadProfile() {
-		this.setState({ loading: true, error: '' });
+	handleProfileReturn = () => {
+		if (!this.mounted || (this.profileDocument && this.profileDocument.hidden)) return;
+		const now = Date.now();
+		if (now - Number(this.profileReturnAt || 0) < 1000) return;
+		this.profileReturnAt = now;
+		this.loadProfile({ quiet: true });
+	};
+
+	async loadProfile(options = {}) {
+		const quiet = Boolean(options.quiet);
+		const requestId = Number(this.profileRequestId || 0) + 1;
+		this.profileRequestId = requestId;
+		if (!quiet) this.setState({ loading: true, error: '' });
 		try {
 			const profile = await api('/api/profile');
+			if (!this.mounted || requestId !== this.profileRequestId) return;
+			const previousProfile = this.state.profile;
+			const changed = profileFingerprint(previousProfile) !== profileFingerprint(profile);
+			const activeChanged = String(previousProfile && previousProfile.activeProfileId || '') !== String(profile.activeProfileId || '');
 			setActiveProfile(profile.activeProfileId || '');
 			if (!profile.configured) {
 				closeFloatingWindows(this.props.workspaceScope, this.pageNode && this.pageNode.ownerDocument);
@@ -1145,19 +1191,20 @@ export default class App extends Component {
 				profile,
 				loading: false,
 				showSettings: false,
-				...(profile.configured ? {} : {
-					path: '/', search: '', previewFile: null, editorFile: null
+				...(profile.configured && !activeChanged ? {} : {
+					path: '/', search: '', searchResults: [], selectedItems: [], previewFile: null, editorFile: null
 				})
 			}, () => {
 				if (!profile.talkAnyEnabled && this.state.showChat) setCloudView(this.props.workspaceScope, 'files');
-				if (profile.configured) {
+				if (profile.configured && (!quiet || changed)) {
 					this.loadDirectory(this.state.path);
 					this.loadQuota();
 					this.loadFeatureMetadata();
 				}
 			});
 		} catch (error) {
-			this.setState({ loading: false, error: error.message });
+			if (!this.mounted || requestId !== this.profileRequestId) return;
+			if (!quiet) this.setState({ loading: false, error: error.message });
 		}
 	}
 

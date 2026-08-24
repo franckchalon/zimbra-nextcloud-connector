@@ -1,5 +1,65 @@
 # Historique
 
+## 3.2.0-beta.7 — 2026-08-21
+
+- correction du sélecteur natif **Joindre > Cloud** après le test réel de beta.6 : sa vue reçoit désormais une hauteur numérique calculée depuis la fenêtre du navigateur, au lieu de dépendre d’une hauteur CSS en pourcentage que `ZmDialog` ne propage pas de façon fiable ;
+- maintien de l’en-tête, de la recherche et du pied d’actions dans la fenêtre Classic, avec défilement limité à la liste des fichiers ;
+- ajout de tests Classic reproduisant une fenêtre de bureau et une petite fenêtre afin de vérifier les dimensions, le montage du sélecteur et la présence du pied fixe ;
+- passage de la version interne des paquets Zimlet à `3.2.4` pour invalider les ressources beta.6 ; la version publique et serveur devient `3.2.0-beta.7`.
+
+## 3.2.0-beta.6 — 2026-08-21
+
+- déplacement de l’action du composeur Classic dans le menu Zimbra natif **Joindre > Cloud** via `initializeAttachPopup`, avec suppression du bouton provisoire placé à droite de la barre d’outils ;
+- correction du sélecteur Classic afin que sa zone d’actions reste visible dans la fenêtre fixe et que les fichiers sélectionnés soient transmis à l’API native de pièces jointes de Zimbra ;
+- rechargement silencieux des profils lorsque la fenêtre reprend le focus ou que l’onglet redevient visible, dans Cloud, Talk et le sélecteur de fichiers, afin de synchroniser Modern et Classic sans `F5` ;
+- simplification du message des réglages en **« Ces réglages sont liés à votre compte Zimbra. »** et barre de titre des éditeurs ONLYOFFICE/Euro-Office plus compacte ;
+- ajout de tests de régression pour le menu natif **Joindre**, la zone d’actions du sélecteur, la reprise de visibilité et la barre d’éditeur ;
+- passage de la version interne des paquets Zimlet à `3.2.3` pour invalider les ressources Classic précédentes ; la version publique et serveur devient `3.2.0-beta.6`.
+
+## 3.2.0-beta.5 — 2026-08-21
+
+- suppression systématique du texte provisoire **Loading Nextcloud…** avant que Preact monte l’application Cloud, le mini-chat ou le sélecteur du composeur Classic ;
+- affichage permanent du libellé **Nextcloud** dans la barre d’outils de rédaction Classic, afin que l’action reste visible lorsque le thème ne sait pas dessiner l’icône personnalisée ;
+- reconnaissance renforcée du composeur Classic : identifiant `COMPOSE`, type de vue fourni par Zimbra, type du contrôleur, puis repli fiable sur la présence conjointe des opérations natives **Envoyer** et **Joindre** ;
+- ajout de tests de régression reproduisant un identifiant de vue opaque, l’absence de fuite du bouton dans une barre Mail ordinaire et le retrait du texte de chargement ;
+- passage de la version interne des paquets Zimlet à `3.2.2` pour invalider les ressources Classic `3.2.1` déjà mises en cache ; la version publique et serveur reste `3.2.0-beta.5` ;
+- prise en compte du premier essai réel réussi de beta.4 sur Zimbra FOSS 10.1.18 : onglets Cloud/Chat, fichiers, Talk complet et mini-chat fonctionnent, tandis que l’intégration du composeur reste à confirmer avec cette correction.
+
+## 3.2.0-beta.4 — 2026-08-21
+
+- déclaration du gestionnaire Classic sous son nom global littéral `fr_franckchalon_nextcloud_classic_HandlerObject`, conformément au contrat du chargeur Zimlet historique ;
+- séparation du bootstrap et du runtime : les applications Cloud et Chat sont créées immédiatement, puis le bundle partagé est chargé à la demande et ne peut plus empêcher l’apparition des onglets ;
+- ajout d’un repli sur l’entrée **Nextcloud** du panneau latéral, qui ouvre désormais l’application Cloud dans les thèmes Classic masquant certains onglets ;
+- passage de la version interne des paquets Zimlet à `3.2.1` afin d’invalider les ressources consolidées `3.2.0` déjà mises en cache, tout en conservant `3.2.0-beta.4` comme version publique et serveur ;
+- extension des tests du paquet au nom global réel, à son export navigateur et au chargement différé du runtime.
+
+## 3.2.0-beta.3 — 2026-08-21
+
+- correction du descripteur Classic afin qu’il référence directement le constructeur JavaScript réellement chargé ; auparavant Zimbra pouvait afficher la Zimlet comme active sans appeler son initialisation ni créer d’onglet ;
+- séparation de l’interface Classic en deux applications visibles, **Cloud** et **Chat**, avec icônes distinctes, tout en conservant le mini-chat global ;
+- renforcement du test de paquet : le nom `handlerObject` du XML, le constructeur, les deux applications et leurs vues respectives sont maintenant contrôlés ;
+- ajout de `configure.sh --ui=modern|classic|both` pour changer uniquement les clients déployés après l’installation, sans reconstruction Java ni redémarrage de `mailboxd` ;
+- ajout du choix des interfaces à la fin d’un `configure.sh` interactif et conservation de `--settings-only` pour l’appel interne sûr depuis l’installateur ;
+- documentation du fait que `install.sh --ui=...` ne pose pas de question puisque l’option constitue déjà la réponse.
+
+## 3.2.0-beta.2 — 2026-08-21
+
+- Use the numeric metadata version `3.2.0` inside every deployable Zimlet while retaining `3.2.0-beta.2` as the release and server-extension version. Zimbra Classic's package parser rejects SemVer prerelease suffixes such as `-beta.1`.
+- Add a release gate that rejects non-numeric Zimlet metadata versions before an archive can be produced.
+
+- ajout d’une interface Zimbra Classic empaquetée sous l’identifiant en domaine inversé `fr_franckchalon_nextcloud_classic`, avec onglet Cloud, espace Talk complet et mini-chat global redimensionnable ;
+- mutualisation du cœur Preact entre Modern et Classic : fichiers, Talk, sélection Cloud, médias et édition ne sont pas recopiés dans une seconde implémentation ;
+- ajout au composeur Classic du choix de fichiers Cloud comme pièces jointes et de l’insertion de liens publics en lecture seule dans les messages HTML ou texte ;
+- ajout dans `install.sh` du choix Modern, Classic ou les deux, avec options non interactives `--ui=modern`, `--ui=classic`, `--ui=both` et variable `CLOUD_UI_MODE` ;
+- ajout du mode `--backend-only` pour installer l’extension Java sur un nœud mailbox supplémentaire sans modifier les Zimlets LDAP, accompagné de limites multi-mailbox explicites ;
+- diagnostic étendu au mode réellement installé, au rôle du nœud, au paquet Classic et à ses attributions COS/comptes explicites ;
+- ajout de `repair-classic-ui.sh`, de la désinstallation Classic, du packaging reproductible et de tests Classic simulant le cycle de vie Zimbra et le composeur ;
+- maintien des identifiants Modern historiques afin de préserver les mises à jour et les attributions existantes ; adoption d’un identifiant propre en domaine inversé uniquement pour le nouveau paquet Classic ;
+- filtrage des liens insérés dans le composeur afin de n’accepter que HTTP/HTTPS et repli Blob pour les anciens navigateurs dépourvus du constructeur `File` ;
+- documentation d’un mode personnel jusqu’à trois Nextcloud, de la limite actuelle du mode géré à un seul Nextcloud et du fait qu’un vrai mapping multi-tenant domaine/COS reste à concevoir ;
+- ajout d’une section expliquant le but du projet et d’une comparaison factuelle avec les projets Zimbra et communautaires existants ;
+- passage à une version mineure bêta car l’ajout d’un nouveau client Zimbra constitue une évolution fonctionnelle importante ; Classic reste à valider sur de vrais serveurs Zimbra FOSS.
+
 ## 3.1.23 — 2026-08-16
 
 - masquage automatique de la bulle flottante Chat dès que l’espace Chat complet est affiché, aussi bien sur la route dédiée `/modern/cloud/chat` que sur la vue Chat interne de `/modern/cloud` ;

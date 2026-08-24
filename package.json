@@ -1,19 +1,22 @@
 {
   "private": true,
   "name": "zimbra-nextcloud-connector",
-  "version": "3.1.23",
+  "version": "3.2.0-beta.7",
+  "zimletVersion": "3.2.4",
   "author": "Franck Chalon",
   "license": "BSD-3-Clause",
-  "description": "Nextcloud files, Talk chat and ONLYOFFICE or Euro-Office editing in Zimbra Modern UI.",
+  "description": "Nextcloud files, Talk chat and ONLYOFFICE or Euro-Office editing in Zimbra Modern and Classic UI.",
   "main": "build/index.js",
   "module": "src/index.js",
   "scripts": {
     "build": "zimlet build",
     "build:chat": "zimlet build --config zimlet.chat.config.js --dest build-chat",
+    "build:classic": "webpack --config webpack.classic.config.js",
     "watch": "zimlet watch",
     "start": "zimlet watch",
-    "package": "zimlet package --name com_nextcloud_connector --label \"Cloud\" --description \"Nextcloud files, Talk chat, ONLYOFFICE and Euro-Office integration for Zimbra Modern UI.\" --pkg-version 3.1.23 --zimbraXVersion \">=0.0.1\"",
-    "package:chat": "node package-chat.js"
+    "package": "zimlet package --name com_nextcloud_connector --label \"Cloud\" --description \"Nextcloud files, Talk chat, ONLYOFFICE and Euro-Office integration for Zimbra Modern UI.\" --pkg-version 3.2.4 --zimbraXVersion \">=0.0.1\"",
+    "package:chat": "node package-chat.js",
+    "package:classic": "node package-classic.js"
   },
   "keywords": [
     "zimlet",
@@ -26,7 +29,18 @@
     "euro-office"
   ],
   "devDependencies": {
+    "@babel/core": "7.29.7",
+    "@babel/plugin-transform-react-jsx": "7.29.7",
+    "@babel/preset-env": "7.29.7",
     "@zimbra/zimlet-cli": "18.10.0",
-    "adm-zip": "0.5.18"
+    "adm-zip": "0.5.18",
+    "babel-loader": "9.2.1",
+    "css-loader": "6.11.0",
+    "less": "4.8.1",
+    "less-loader": "11.1.4",
+    "preact": "10.27.2",
+    "style-loader": "4.0.0",
+    "webpack": "5.109.2",
+    "webpack-cli": "6.0.1"
   }
 }

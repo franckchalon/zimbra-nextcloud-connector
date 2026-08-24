@@ -80,7 +80,11 @@ export function insertComposeContent(bridge, editor, html, text) {
 export function buildReadOnlyLinkContent(links, intro, readOnlyLabel) {
 	const escape = value => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;')
 		.replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-	const safeLinks = Array.isArray(links) ? links : [];
+	// Never place an arbitrary scheme returned by a remote service in a mail
+	// composer. Nextcloud public shares are HTTP(S); anything else is rejected.
+	const safeLinks = (Array.isArray(links) ? links : []).filter(link =>
+		link && /^https?:\/\/[^\s]+$/i.test(String(link.url || ''))
+	);
 	return {
 		html: `<p>${escape(intro)}</p><ul>${safeLinks.map(link => `<li><a href="${escape(link.url)}">${escape(link.name)}</a> — ${escape(readOnlyLabel)}</li>`).join('')}</ul>`,
 		text: `${intro}\n${safeLinks.map(link => `${link.name} (${readOnlyLabel}) : ${link.url}`).join('\n')}`

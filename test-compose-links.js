@@ -59,6 +59,11 @@ check(content.html.includes('Budget &lt;2026&gt;.xlsx') && content.html.includes
 	'Generated HTML must escape file names and URLs');
 check(content.text.includes('Budget <2026>.xlsx (read only) : https://cloud.example/s/a&b'),
 	'The manual fallback must preserve readable plain text');
+const unsafe = bridge.buildReadOnlyLinkContent([
+	{ name: 'Unsafe', url: 'javascript:alert(1)' }
+], 'Cloud links:', 'read only');
+check(!unsafe.html.includes('javascript:') && !unsafe.text.includes('javascript:'),
+	'Generated links must reject non-HTTP(S) URL schemes');
 
 bridge.unregisterComposeBridge(first);
 bridge.unregisterComposeBridge(second);

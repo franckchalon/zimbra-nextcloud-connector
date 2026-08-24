@@ -15,6 +15,8 @@ fi
 purge="false"
 if [[ "${1:-}" == "--purge" ]]; then purge="true"; fi
 
+runuser -u zimbra -- /opt/zimbra/bin/zmzimletctl disable fr_franckchalon_nextcloud_classic || true
+runuser -u zimbra -- /opt/zimbra/bin/zmzimletctl undeploy fr_franckchalon_nextcloud_classic || true
 runuser -u zimbra -- /opt/zimbra/bin/zmzimletctl disable com_nextcloud_connector_chat || true
 runuser -u zimbra -- /opt/zimbra/bin/zmzimletctl undeploy com_nextcloud_connector_chat || true
 runuser -u zimbra -- /opt/zimbra/bin/zmzimletctl disable com_nextcloud_connector || true

@@ -56,6 +56,52 @@ cloud_select_language() {
   echo
 }
 
+# Select which Zimbra web clients receive the connector. CLOUD_UI_MODE can be
+# set to modern, classic or both for unattended deployments.
+cloud_select_ui_mode() {
+  local requested="${CLOUD_UI_MODE:-}" choice="" default_choice=3
+  case "${CLOUD_UI_MODE_DEFAULT:-both}" in
+    modern) default_choice=1 ;;
+    classic) default_choice=2 ;;
+    both) default_choice=3 ;;
+  esac
+  case "${requested,,}" in
+    modern|classic|both) CLOUD_UI_MODE="${requested,,}"; export CLOUD_UI_MODE; return ;;
+    "") ;;
+    *) printf '%s\n' "CLOUD_UI_MODE must be modern, classic or both." >&2; return 1 ;;
+  esac
+
+  echo
+  case "${UI_LANGUAGE:-fr}" in
+    fr)
+      echo "Quelle interface Zimbra faut-il installer ?"
+      echo "  1) Modern uniquement"
+      echo "  2) Classic uniquement"
+      echo "  3) Modern et Classic (recommandé pour un serveur mixte)"
+      ;;
+    *)
+      echo "Which Zimbra interface should be installed?"
+      echo "  1) Modern only"
+      echo "  2) Classic only"
+      echo "  3) Modern and Classic (recommended for a mixed server)"
+      ;;
+  esac
+  while true; do
+    read -r -p "$(cloud_msg your_choice) [$default_choice] : " choice
+    choice="${choice//$'\r'/}"
+    choice="${choice#"${choice%%[![:space:]]*}"}"
+    choice="${choice%"${choice##*[![:space:]]}"}"
+    choice="${choice:-$default_choice}"
+    case "$choice" in
+      1) CLOUD_UI_MODE="modern"; break ;;
+      2) CLOUD_UI_MODE="classic"; break ;;
+      3) CLOUD_UI_MODE="both"; break ;;
+      *) printf '%s\n' "1-3" >&2 ;;
+    esac
+  done
+  export CLOUD_UI_MODE
+}
+
 cloud_msg_russian() {
   case "$1" in
     root_required) printf '%s\n' 'Запустите этот скрипт с sudo или от имени root.' ;;
@@ -63,7 +109,7 @@ cloud_msg_russian() {
     required_value) printf '%s\n' 'Это значение обязательно.' ;;
     https_required) printf '%s\n' 'Ошибка: %s должен начинаться с https://' ;;
     invalid_address) printf '%s\n' 'Ошибка: недопустимый адрес.' ;;
-    config_title) printf '%s\n' 'Настройка Cloud Zimlet 3.1.23 (Nextcloud + офисный сервер)' ;;
+    config_title) printf '%s\n' 'Настройка Cloud Zimlet 3.2.0-beta.7 (Nextcloud + офисный сервер)' ;;
     zimbra_url) printf '%s\n' 'Общедоступный адрес Zimbra' ;;
     remote_backgrounds_prompt) printf '%s\n' 'Разрешить фоновые фотографии Unsplash? Изображения загружаются с внешнего сервиса.' ;;
     enabled) printf '%s\n' 'Включено' ;;
@@ -114,16 +160,16 @@ cloud_msg_russian() {
     chat_cos_synced) printf '%s\n' 'Назначения Chat синхронизированы: обновлено %s из %s COS Cloud.' ;;
     chat_accounts_synced) printf '%s\n' 'Явные назначения Chat для учётных записей синхронизированы: обновлено %s из %s явных назначений Cloud.' ;;
     cache_warning) printf '%s\n' 'Предупреждение: глобальная очистка кэша не ответила. Установка остаётся активной; войдите в Zimbra снова.' ;;
-    install_done) printf '%s\n' 'Установка 3.1.23 завершена. mailboxd работает, расширение сообщает ожидаемую версию.' ;;
-    reconnect) printf '%s\n' 'Войдите в Zimbra Modern снова или нажмите Ctrl+F5, затем откройте Облако в главном меню.' ;;
+    install_done) printf '%s\n' 'Установка 3.2.0-beta.7 завершена. mailboxd работает, расширение сообщает ожидаемую версию.' ;;
+    reconnect) printf '%s\n' 'Войдите в выбранный веб-клиент Zimbra снова или нажмите Ctrl+F5, затем откройте Облако.' ;;
     data_kept) printf '%s\n' 'Конфигурация и зашифрованные профили сохранены.' ;;
     uninstall_cache_warning) printf '%s\n' 'Предупреждение: глобальная очистка кэша не ответила, но удаление завершено.' ;;
     uninstall_done) printf '%s\n' 'Удаление завершено. Перемещённые элементы можно восстановить.' ;;
     ui_tools_missing) printf '%s\n' 'Ошибка: инструменты Zimbra или ZIP интерфейса не найдены.' ;;
     remove_modern) printf '%s\n' 'Удаление предыдущего маршрута Modern…' ;;
-    clean_modern) printf '%s\n' 'Чистое развёртывание интерфейса Modern 3.1.23…' ;;
+    clean_modern) printf '%s\n' 'Чистое развёртывание интерфейса Modern 3.2.0-beta.7…' ;;
     zimlet_cache_warning) printf '%s\n' 'Предупреждение: кэш Zimlet не ответил. Закройте все окна браузера перед повторным входом.' ;;
-    ui_repaired) printf '%s\n' 'Интерфейс 3.1.23 развёрнут без изменения Java-расширения, конфигурации или профилей.' ;;
+    ui_repaired) printf '%s\n' 'Интерфейс 3.2.0-beta.7 развёрнут без изменения Java-расширения, конфигурации или профилей.' ;;
     private_window) printf '%s\n' 'Закройте все окна Zimbra, откройте новое приватное окно и войдите снова.' ;;
     report_root) printf '%s\n' 'Запустите этот отчёт с sudo или от имени root.' ;;
     storage_title) printf '%s\n' 'Отчёт о хранилище Cloud Zimlet' ;;
@@ -153,7 +199,7 @@ cloud_msg_extended() {
     required_value) values='Este valor é obrigatório.|Este valor é obrigatório.|यह मान आवश्यक है।|Nilai ini diperlukan.' ;;
     https_required) values='Erro: %s deve começar por https://|Erro: %s deve começar com https://|त्रुटि: %s का आरंभ https:// से होना चाहिए|Ralat: %s mesti bermula dengan https://' ;;
     invalid_address) values='Erro: endereço inválido.|Erro: endereço inválido.|त्रुटि: अमान्य पता।|Ralat: alamat tidak sah.' ;;
-    config_title) values='Configuração da Zimlet Cloud 3.1.23 (Nextcloud + servidor de escritório)|Configuração da Zimlet Cloud 3.1.23 (Nextcloud + servidor de escritório)|Cloud Zimlet 3.1.23 कॉन्फ़िगरेशन (Nextcloud + ऑफ़िस सर्वर)|Konfigurasi Zimlet Cloud 3.1.23 (Nextcloud + pelayan pejabat)' ;;
+    config_title) values='Configuração da Zimlet Cloud 3.2.0-beta.7 (Nextcloud + servidor de escritório)|Configuração da Zimlet Cloud 3.2.0-beta.7 (Nextcloud + servidor de escritório)|Cloud Zimlet 3.2.0-beta.7 कॉन्फ़िगरेशन (Nextcloud + ऑफ़िस सर्वर)|Konfigurasi Zimlet Cloud 3.2.0-beta.7 (Nextcloud + pelayan pejabat)' ;;
     zimbra_url) values='Endereço público do Zimbra|Endereço público do Zimbra|Zimbra का सार्वजनिक पता|Alamat awam Zimbra' ;;
     remote_backgrounds_prompt) values='Permitir fotografias de fundo do Unsplash? As imagens são carregadas de um serviço externo.|Permitir fotos de fundo do Unsplash? As imagens são carregadas de um serviço externo.|Unsplash पृष्ठभूमि फ़ोटो की अनुमति दें? चित्र बाहरी सेवा से लोड होते हैं।|Benarkan foto latar Unsplash? Imej dimuatkan daripada perkhidmatan luaran.' ;;
     enabled) values='Ativado|Ativado|चालू|Didayakan' ;;
@@ -204,16 +250,16 @@ cloud_msg_extended() {
     chat_cos_synced) values='Atribuições do Chat sincronizadas: %s de %s COS Cloud atualizadas.|Atribuições do Chat sincronizadas: %s de %s COS Cloud atualizadas.|Chat असाइनमेंट सिंक किए गए: %s में से %s Cloud COS अपडेट हुए।|Penetapan Chat disegerakkan: %s daripada %s COS Cloud dikemas kini.' ;;
     chat_accounts_synced) values='Atribuições Chat explícitas das contas sincronizadas: %s de %s atribuições Cloud explícitas atualizadas.|Atribuições Chat explícitas das contas sincronizadas: %s de %s atribuições Cloud explícitas atualizadas.|स्पष्ट खाता Chat असाइनमेंट सिंक किए गए: %s में से %s स्पष्ट Cloud असाइनमेंट अपडेट हुए।|Penetapan Chat akaun tersurat disegerakkan: %s daripada %s penetapan Cloud tersurat dikemas kini.' ;;
     cache_warning) values='Aviso: a limpeza global da cache não respondeu. A instalação continua ativa; volte a iniciar sessão no Zimbra.|Aviso: a limpeza global do cache não respondeu. A instalação continua ativa; entre novamente no Zimbra.|चेतावनी: वैश्विक कैश साफ़ करने का उत्तर नहीं मिला। इंस्टॉलेशन सक्रिय है; Zimbra में फिर साइन इन करें।|Amaran: pembersihan cache global tidak bertindak balas. Pemasangan kekal aktif; log masuk semula ke Zimbra.' ;;
-    install_done) values='Instalação 3.1.23 concluída. O mailboxd está operacional e a extensão indica a versão esperada.|Instalação 3.1.23 concluída. O mailboxd está em execução e a extensão informa a versão esperada.|इंस्टॉलेशन 3.1.23 पूर्ण। mailboxd चल रहा है और एक्सटेंशन अपेक्षित संस्करण बता रहा है।|Pemasangan 3.1.23 selesai. mailboxd sedang berjalan dan sambungan melaporkan versi yang dijangka.' ;;
-    reconnect) values='Volte a iniciar sessão no Zimbra Modern ou prima Ctrl+F5 e abra Cloud no menu principal.|Entre novamente no Zimbra Modern ou pressione Ctrl+F5 e abra Cloud no menu principal.|Zimbra Modern में फिर साइन इन करें या Ctrl+F5 दबाएँ, फिर मुख्य मेनू में क्लाउड खोलें।|Log masuk semula ke Zimbra Modern atau tekan Ctrl+F5, kemudian buka Awan dalam menu utama.' ;;
+    install_done) values='Instalação 3.2.0-beta.7 concluída. O mailboxd está operacional e a extensão indica a versão esperada.|Instalação 3.2.0-beta.7 concluída. O mailboxd está em execução e a extensão informa a versão esperada.|इंस्टॉलेशन 3.2.0-beta.7 पूर्ण। mailboxd चल रहा है और एक्सटेंशन अपेक्षित संस्करण बता रहा है।|Pemasangan 3.2.0-beta.7 selesai. mailboxd sedang berjalan dan sambungan melaporkan versi yang dijangka.' ;;
+    reconnect) values='Volte a iniciar sessão no cliente Web Zimbra escolhido ou prima Ctrl+F5 e abra Cloud.|Entre novamente no cliente Web Zimbra escolhido ou pressione Ctrl+F5 e abra Cloud.|चुने गए Zimbra वेब क्लाइंट में फिर साइन इन करें या Ctrl+F5 दबाएँ, फिर Cloud खोलें।|Log masuk semula ke klien web Zimbra yang dipilih atau tekan Ctrl+F5, kemudian buka Cloud.' ;;
     data_kept) values='A configuração e os perfis cifrados são mantidos.|A configuração e os perfis criptografados são mantidos.|कॉन्फ़िगरेशन और एन्क्रिप्टेड प्रोफ़ाइल सुरक्षित रखे गए हैं।|Konfigurasi dan profil disulitkan dikekalkan.' ;;
     uninstall_cache_warning) values='Aviso: a limpeza global da cache não respondeu, mas a desinstalação terminou.|Aviso: a limpeza global do cache não respondeu, mas a desinstalação foi concluída.|चेतावनी: वैश्विक कैश साफ़ करने का उत्तर नहीं मिला, पर अनइंस्टॉल पूरा हो गया।|Amaran: pembersihan cache global tidak bertindak balas, tetapi penyahpasangan selesai.' ;;
     uninstall_done) values='Desinstalação concluída. Os elementos movidos continuam recuperáveis.|Desinstalação concluída. Os itens movidos continuam recuperáveis.|अनइंस्टॉल पूरा हुआ। हटाए गए आइटम अभी भी वापस पाए जा सकते हैं।|Penyahpasangan selesai. Item yang dialihkan masih boleh dipulihkan.' ;;
     ui_tools_missing) values='Erro: ferramentas Zimbra ou ZIP da interface não encontrados.|Erro: ferramentas Zimbra ou ZIP da interface não encontrados.|त्रुटि: Zimbra उपकरण या इंटरफ़ेस ZIP नहीं मिला।|Ralat: alat Zimbra atau ZIP antara muka tidak ditemui.' ;;
     remove_modern) values='A remover a rota Modern anterior…|Removendo a rota Modern anterior…|पिछला Modern रूट हटाया जा रहा है…|Mengalih keluar laluan Modern sebelumnya…' ;;
-    clean_modern) values='Implementação limpa da interface Modern 3.1.23…|Implantação limpa da interface Modern 3.1.23…|Modern 3.1.23 इंटरफ़ेस की साफ़ तैनाती…|Penggunaan bersih antara muka Modern 3.1.23…' ;;
+    clean_modern) values='Implementação limpa da interface Modern 3.2.0-beta.7…|Implantação limpa da interface Modern 3.2.0-beta.7…|Modern 3.2.0-beta.7 इंटरफ़ेस की साफ़ तैनाती…|Penggunaan bersih antara muka Modern 3.2.0-beta.7…' ;;
     zimlet_cache_warning) values='Aviso: a cache da Zimlet não respondeu. Feche todas as janelas do navegador antes de voltar a iniciar sessão.|Aviso: o cache da Zimlet não respondeu. Feche todas as janelas do navegador antes de entrar novamente.|चेतावनी: Zimlet कैश ने उत्तर नहीं दिया। फिर साइन इन करने से पहले सभी ब्राउज़र विंडो बंद करें।|Amaran: cache Zimlet tidak bertindak balas. Tutup semua tetingkap pelayar sebelum log masuk semula.' ;;
-    ui_repaired) values='Interface 3.1.23 implementada sem alterar a extensão Java, a configuração ou os perfis.|Interface 3.1.23 implantada sem alterar a extensão Java, a configuração ou os perfis.|इंटरफ़ेस 3.1.23 Java एक्सटेंशन, कॉन्फ़िगरेशन या प्रोफ़ाइल बदले बिना तैनात हुआ।|Antara muka 3.1.23 digunakan tanpa mengubah sambungan Java, konfigurasi atau profil.' ;;
+    ui_repaired) values='Interface 3.2.0-beta.7 implementada sem alterar a extensão Java, a configuração ou os perfis.|Interface 3.2.0-beta.7 implantada sem alterar a extensão Java, a configuração ou os perfis.|इंटरफ़ेस 3.2.0-beta.7 Java एक्सटेंशन, कॉन्फ़िगरेशन या प्रोफ़ाइल बदले बिना तैनात हुआ।|Antara muka 3.2.0-beta.7 digunakan tanpa mengubah sambungan Java, konfigurasi atau profil.' ;;
     private_window) values='Feche todas as janelas Zimbra, abra uma nova janela privada e volte a iniciar sessão.|Feche todas as janelas do Zimbra, abra uma nova janela anônima e entre novamente.|सभी Zimbra विंडो बंद करें, नई निजी विंडो खोलें और फिर साइन इन करें।|Tutup semua tetingkap Zimbra, buka tetingkap peribadi baharu dan log masuk semula.' ;;
     report_root) values='Execute este relatório com sudo ou como root.|Execute este relatório com sudo ou como root.|यह रिपोर्ट sudo या root के रूप में चलाएँ।|Jalankan laporan ini dengan sudo atau sebagai root.' ;;
     storage_title) values='Relatório de armazenamento da Zimlet Cloud|Relatório de armazenamento da Zimlet Cloud|Cloud Zimlet स्टोरेज रिपोर्ट|Laporan storan Zimlet Cloud' ;;
@@ -245,7 +291,7 @@ cloud_msg() {
     required_value) values='Cette valeur est obligatoire.|This value is required.|Este valor es obligatorio.|Questo valore è obbligatorio.|Dieser Wert ist erforderlich.' ;;
     https_required) values='Erreur : %s doit commencer par https://|Error: %s must start with https://|Error: %s debe comenzar por https://|Errore: %s deve iniziare con https://|Fehler: %s muss mit https:// beginnen' ;;
     invalid_address) values='Erreur : adresse invalide.|Error: invalid address.|Error: dirección no válida.|Errore: indirizzo non valido.|Fehler: ungültige Adresse.' ;;
-    config_title) values='Configuration de la Zimlet Cloud 3.1.23 (Nextcloud + serveur bureautique)|Cloud Zimlet 3.1.23 configuration (Nextcloud + office server)|Configuración de la Zimlet Cloud 3.1.23 (Nextcloud + servidor ofimático)|Configurazione della Cloud Zimlet 3.1.23 (Nextcloud + server office)|Konfiguration der Cloud-Zimlet 3.1.23 (Nextcloud + Office-Server)' ;;
+    config_title) values='Configuration de la Zimlet Cloud 3.2.0-beta.7 (Nextcloud + serveur bureautique)|Cloud Zimlet 3.2.0-beta.7 configuration (Nextcloud + office server)|Configuración de la Zimlet Cloud 3.2.0-beta.7 (Nextcloud + servidor ofimático)|Configurazione della Cloud Zimlet 3.2.0-beta.7 (Nextcloud + server office)|Konfiguration der Cloud-Zimlet 3.2.0-beta.7 (Nextcloud + Office-Server)' ;;
     zimbra_url) values='Adresse publique de Zimbra|Public Zimbra address|Dirección pública de Zimbra|Indirizzo pubblico di Zimbra|Öffentliche Zimbra-Adresse' ;;
     remote_backgrounds_prompt) values='Autoriser les photos d’arrière-plan Unsplash ? Les images sont chargées depuis un service externe.|Allow Unsplash background photos? Images are loaded from an external service.|¿Permitir fotos de fondo de Unsplash? Las imágenes se cargan desde un servicio externo.|Consentire le foto di sfondo di Unsplash? Le immagini vengono caricate da un servizio esterno.|Unsplash-Hintergrundfotos zulassen? Die Bilder werden von einem externen Dienst geladen.' ;;
     enabled) values='Activé|Enabled|Activado|Attivato|Aktiviert' ;;
@@ -296,16 +342,16 @@ cloud_msg() {
     chat_cos_synced) values='Attributions Chat synchronisées : %s COS Cloud mises à jour sur %s.|Chat assignments synchronized: %s of %s Cloud COSes updated.|Asignaciones de Chat sincronizadas: se actualizaron %s de %s COS de Cloud.|Assegnazioni Chat sincronizzate: aggiornate %s COS Cloud su %s.|Chat-Zuweisungen synchronisiert: %s von %s Cloud-COS aktualisiert.' ;;
     chat_accounts_synced) values='Attributions Chat explicites des comptes synchronisées : %s mises à jour sur %s attributions Cloud explicites.|Explicit account Chat assignments synchronized: %s of %s explicit Cloud assignments updated.|Asignaciones explícitas de Chat de las cuentas sincronizadas: se actualizaron %s de %s asignaciones explícitas de Cloud.|Assegnazioni Chat esplicite degli account sincronizzate: aggiornate %s assegnazioni Cloud esplicite su %s.|Explizite Chat-Kontenzuweisungen synchronisiert: %s von %s expliziten Cloud-Zuweisungen aktualisiert.' ;;
     cache_warning) values='Avertissement : le vidage global du cache n’a pas répondu. L’installation reste active ; reconnectez-vous à Zimbra.|Warning: the global cache flush did not respond. The installation remains active; sign in to Zimbra again.|Advertencia: el vaciado global de caché no respondió. La instalación sigue activa; vuelva a iniciar sesión en Zimbra.|Avviso: lo svuotamento globale della cache non ha risposto. L’installazione resta attiva; accedere nuovamente a Zimbra.|Warnung: Das globale Leeren des Caches antwortete nicht. Die Installation bleibt aktiv; melden Sie sich erneut bei Zimbra an.' ;;
-    install_done) values='Installation 3.1.23 terminée. mailboxd est opérationnel et l’extension répond avec la version attendue.|Installation 3.1.23 completed. mailboxd is running and the extension reports the expected version.|Instalación 3.1.23 terminada. mailboxd está operativo y la extensión indica la versión esperada.|Installazione 3.1.23 completata. mailboxd è operativo e l’estensione restituisce la versione prevista.|Installation 3.1.23 abgeschlossen. mailboxd läuft und die Erweiterung meldet die erwartete Version.' ;;
-    reconnect) values='Reconnectez-vous à Zimbra Modern ou faites Ctrl+F5, puis ouvrez Cloud dans le menu principal.|Sign in to Zimbra Modern again or press Ctrl+F5, then open Cloud from the main menu.|Vuelva a iniciar sesión en Zimbra Modern o pulse Ctrl+F5 y abra Cloud en el menú principal.|Accedere nuovamente a Zimbra Modern o premere Ctrl+F5, quindi aprire Cloud dal menu principale.|Melden Sie sich erneut bei Zimbra Modern an oder drücken Sie Strg+F5 und öffnen Sie dann Cloud im Hauptmenü.' ;;
+    install_done) values='Installation 3.2.0-beta.7 terminée. mailboxd est opérationnel et l’extension répond avec la version attendue.|Installation 3.2.0-beta.7 completed. mailboxd is running and the extension reports the expected version.|Instalación 3.2.0-beta.7 terminada. mailboxd está operativo y la extensión indica la versión esperada.|Installazione 3.2.0-beta.7 completata. mailboxd è operativo e l’estensione restituisce la versione prevista.|Installation 3.2.0-beta.7 abgeschlossen. mailboxd läuft und die Erweiterung meldet die erwartete Version.' ;;
+    reconnect) values='Reconnectez-vous dans le client Web Zimbra choisi ou faites Ctrl+F5, puis ouvrez Cloud.|Sign in to the selected Zimbra web client again or press Ctrl+F5, then open Cloud.|Vuelva a iniciar sesión en el cliente web de Zimbra elegido o pulse Ctrl+F5 y abra Cloud.|Accedere nuovamente al client Web Zimbra selezionato o premere Ctrl+F5, quindi aprire Cloud.|Melden Sie sich erneut im gewählten Zimbra-Webclient an oder drücken Sie Strg+F5 und öffnen Sie dann Cloud.' ;;
     data_kept) values='La configuration et les profils chiffrés sont conservés.|The configuration and encrypted profiles are preserved.|Se conservan la configuración y los perfiles cifrados.|La configurazione e i profili cifrati vengono conservati.|Konfiguration und verschlüsselte Profile bleiben erhalten.' ;;
     uninstall_cache_warning) values='Avertissement : le vidage global du cache n’a pas répondu, mais la désinstallation est terminée.|Warning: the global cache flush did not respond, but uninstallation is complete.|Advertencia: el vaciado global de caché no respondió, pero la desinstalación ha terminado.|Avviso: lo svuotamento globale della cache non ha risposto, ma la disinstallazione è terminata.|Warnung: Das globale Leeren des Caches antwortete nicht, die Deinstallation ist jedoch abgeschlossen.' ;;
     uninstall_done) values='Désinstallation terminée. Les éléments déplacés restent récupérables.|Uninstallation complete. Moved items remain recoverable.|Desinstalación terminada. Los elementos movidos siguen siendo recuperables.|Disinstallazione completata. Gli elementi spostati restano recuperabili.|Deinstallation abgeschlossen. Verschobene Elemente können weiterhin wiederhergestellt werden.' ;;
     ui_tools_missing) values='Erreur : outils Zimbra ou ZIP de l’interface introuvables.|Error: Zimbra tools or interface ZIP not found.|Error: no se encontraron las herramientas de Zimbra o el ZIP de la interfaz.|Errore: strumenti Zimbra o ZIP dell’interfaccia non trovati.|Fehler: Zimbra-Werkzeuge oder Oberflächen-ZIP wurden nicht gefunden.' ;;
     remove_modern) values='Retrait de l’ancienne route Modern…|Removing the previous Modern route…|Retirada de la ruta Modern anterior…|Rimozione della precedente route Modern…|Vorherige Modern-Route wird entfernt…' ;;
-    clean_modern) values='Déploiement propre de l’interface Modern 3.1.23…|Clean deployment of the Modern 3.1.23 interface…|Despliegue limpio de la interfaz Modern 3.1.23…|Distribuzione pulita dell’interfaccia Modern 3.1.23…|Saubere Bereitstellung der Modern-Oberfläche 3.1.23…' ;;
+    clean_modern) values='Déploiement propre de l’interface Modern 3.2.0-beta.7…|Clean deployment of the Modern 3.2.0-beta.7 interface…|Despliegue limpio de la interfaz Modern 3.2.0-beta.7…|Distribuzione pulita dell’interfaccia Modern 3.2.0-beta.7…|Saubere Bereitstellung der Modern-Oberfläche 3.2.0-beta.7…' ;;
     zimlet_cache_warning) values='Avertissement : le cache Zimlet n’a pas répondu. Fermez tout de même toutes les fenêtres du navigateur avant de vous reconnecter.|Warning: the Zimlet cache did not respond. Close all browser windows before signing in again.|Advertencia: la caché de Zimlet no respondió. Cierre todas las ventanas del navegador antes de volver a iniciar sesión.|Avviso: la cache Zimlet non ha risposto. Chiudere tutte le finestre del browser prima di accedere nuovamente.|Warnung: Der Zimlet-Cache antwortete nicht. Schließen Sie vor der erneuten Anmeldung alle Browserfenster.' ;;
-    ui_repaired) values='Interface 3.1.23 déployée sans modifier l’extension Java, la configuration ou les profils.|Interface 3.1.23 deployed without changing the Java extension, configuration or profiles.|Interfaz 3.1.23 desplegada sin modificar la extensión Java, la configuración ni los perfiles.|Interfaccia 3.1.23 distribuita senza modificare l’estensione Java, la configurazione o i profili.|Oberfläche 3.1.23 bereitgestellt, ohne Java-Erweiterung, Konfiguration oder Profile zu ändern.' ;;
+    ui_repaired) values='Interface 3.2.0-beta.7 déployée sans modifier l’extension Java, la configuration ou les profils.|Interface 3.2.0-beta.7 deployed without changing the Java extension, configuration or profiles.|Interfaz 3.2.0-beta.7 desplegada sin modificar la extensión Java, la configuración ni los perfiles.|Interfaccia 3.2.0-beta.7 distribuita senza modificare l’estensione Java, la configurazione o i profili.|Oberfläche 3.2.0-beta.7 bereitgestellt, ohne Java-Erweiterung, Konfiguration oder Profile zu ändern.' ;;
     private_window) values='Fermez toutes les fenêtres Zimbra, ouvrez une nouvelle fenêtre privée et reconnectez-vous.|Close all Zimbra windows, open a new private window and sign in again.|Cierre todas las ventanas de Zimbra, abra una nueva ventana privada y vuelva a iniciar sesión.|Chiudere tutte le finestre Zimbra, aprire una nuova finestra privata e accedere nuovamente.|Schließen Sie alle Zimbra-Fenster, öffnen Sie ein neues privates Fenster und melden Sie sich erneut an.' ;;
     report_root) values='Lancez ce rapport avec sudo ou en root.|Run this report with sudo or as root.|Ejecute este informe con sudo o como root.|Eseguire questo rapporto con sudo o come root.|Führen Sie diesen Bericht mit sudo oder als root aus.' ;;
     storage_title) values='Rapport de stockage de la Zimlet Cloud|Cloud Zimlet storage report|Informe de almacenamiento de la Zimlet Cloud|Rapporto di archiviazione della Zimlet Cloud|Speicherbericht der Cloud-Zimlet' ;;

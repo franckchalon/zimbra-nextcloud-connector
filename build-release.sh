@@ -2,7 +2,8 @@
 set -euo pipefail
 
 project_dir="$(cd "$(dirname "$0")" && pwd)"
-version="3.1.23"
+version="3.2.0-beta.7"
+zimlet_version="$(node -p "require('$project_dir/package.json').zimletVersion")"
 dist_dir="$project_dir/dist"
 release_name="zimbra-nextcloud-connector-${version}"
 release_dir="$dist_dir/$release_name"
@@ -17,14 +18,18 @@ cleanup() {
 trap cleanup EXIT
 
 cd "$project_dir"
+if [[ ! "$zimlet_version" =~ ^[0-9]+(\.[0-9]+){1,3}$ ]]; then
+  echo "Zimbra package metadata version must be numeric: $zimlet_version" >&2
+  exit 1
+fi
 private_marker="$(printf '%s%s' '3' 'tech')"
 if rg -n -i "$private_marker" . \
   --glob '!.git/**' --glob '!node_modules/**' --glob '!build/**' --glob '!pkg/**' \
-  --glob '!build-chat/**' --glob '!pkg-chat/**' --glob '!dist/**'; then
+  --glob '!build-chat/**' --glob '!pkg-chat/**' --glob '!classic-build/**' --glob '!pkg-classic/**' --glob '!dist/**'; then
   echo "Private infrastructure marker found; release aborted." >&2
   exit 1
 fi
-for generated_dir in "$project_dir/build" "$project_dir/pkg" "$project_dir/build-chat" "$project_dir/pkg-chat"; do
+for generated_dir in "$project_dir/build" "$project_dir/pkg" "$project_dir/build-chat" "$project_dir/pkg-chat" "$project_dir/classic-build" "$project_dir/pkg-classic"; do
   if [[ -d "$generated_dir" ]]; then
     find "$generated_dir" -depth -mindepth 1 -delete
     rmdir "$generated_dir"
@@ -35,11 +40,14 @@ done
   --name com_nextcloud_connector \
   --label "Cloud" \
   --description "Nextcloud files, Talk chat, ONLYOFFICE and Euro-Office integration for Zimbra Modern UI." \
-  --pkg-version "$version" \
+  --pkg-version "$zimlet_version" \
   --zimbraXVersion ">=0.0.1"
 "$project_dir/node_modules/.bin/zimlet" build --config zimlet.chat.config.js --dest build-chat
 node package-chat.js
+"$project_dir/node_modules/.bin/webpack" --config webpack.classic.config.js
+node package-classic.js
 bash ./test-frontend-build.sh
+bash ./test-classic-build.sh
 bash ./test-installer.sh
 ./server/test-local.sh
 
@@ -47,6 +55,7 @@ mkdir -p "$stage_dir/$release_name/frontend" "$stage_dir/$release_name/server" "
 install -m 0755 installer/configure.sh "$stage_dir/$release_name/configure.sh"
 install -m 0755 installer/install.sh "$stage_dir/$release_name/install.sh"
 install -m 0755 installer/repair-modern-ui.sh "$stage_dir/$release_name/repair-modern-ui.sh"
+install -m 0755 installer/repair-classic-ui.sh "$stage_dir/$release_name/repair-classic-ui.sh"
 install -m 0755 installer/uninstall.sh "$stage_dir/$release_name/uninstall.sh"
 install -m 0755 installer/storage-report.sh "$stage_dir/$release_name/storage-report.sh"
 install -m 0755 installer/diagnose.sh "$stage_dir/$release_name/diagnose.sh"
@@ -64,6 +73,7 @@ install -m 0644 CHANGELOG.md "$stage_dir/$release_name/CHANGELOG.md"
 install -m 0644 LICENSE "$stage_dir/$release_name/LICENSE"
 install -m 0644 pkg/com_nextcloud_connector.zip "$stage_dir/$release_name/frontend/com_nextcloud_connector.zip"
 install -m 0644 pkg-chat/com_nextcloud_connector_chat.zip "$stage_dir/$release_name/frontend/com_nextcloud_connector_chat.zip"
+install -m 0644 pkg-classic/fr_franckchalon_nextcloud_classic.zip "$stage_dir/$release_name/frontend/fr_franckchalon_nextcloud_classic.zip"
 install -m 0644 server/build/com_nextcloud_connector.jar "$stage_dir/$release_name/server/com_nextcloud_connector.jar"
 install -m 0600 server/resources/config.example.properties "$stage_dir/$release_name/server/config.example.properties"
 mkdir -p "$stage_dir/$release_name/server/source-build"
@@ -72,17 +82,18 @@ install -m 0755 server/build-on-zimbra.sh "$stage_dir/$release_name/server/sourc
 
 source_zip="$stage_dir/$release_name/source/zimbra-nextcloud-connector-source-${version}.zip"
 zip -q -r "$source_zip" . \
-  -x 'node_modules/*' 'build/*' 'pkg/*' 'build-chat/*' 'pkg-chat/*' 'dist/*' 'server/build/*' \
+  -x 'node_modules/*' 'build/*' 'pkg/*' 'build-chat/*' 'pkg-chat/*' 'classic-build/*' 'pkg-classic/*' 'dist/*' 'server/build/*' \
      'server/.zimbra-build-test.*/*' '.release-stage.*/*' '.git/*' \
      '.env' '.env.*' '*.local.properties' 'nextcloud-zimlet.properties' \
      '*.log' '*.har' '*.pem' '*.key' '*.p12' '*.enc' '*.zip'
-if unzip -Z1 "$source_zip" | grep -E '(^|/)(node_modules|\.git|dist|build|pkg|build-chat|pkg-chat)/|(^|/)nextcloud-zimlet\.properties$|\.(enc|log|har|pem|key|p12)$'; then
+if unzip -Z1 "$source_zip" | grep -E '(^|/)(node_modules|\.git|dist|build|pkg|build-chat|pkg-chat|classic-build|pkg-classic)/|(^|/)nextcloud-zimlet\.properties$|\.(enc|log|har|pem|key|p12)$'; then
   echo "Forbidden private/generated file found in source archive; release aborted." >&2
   exit 1
 fi
 (cd "$stage_dir/$release_name" && sha256sum \
   frontend/com_nextcloud_connector.zip \
   frontend/com_nextcloud_connector_chat.zip \
+  frontend/fr_franckchalon_nextcloud_classic.zip \
   server/com_nextcloud_connector.jar \
   source/zimbra-nextcloud-connector-source-${version}.zip > SHA256SUMS)
 

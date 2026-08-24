@@ -42,6 +42,42 @@
 .linkButton { border: 1px solid #3d8f78; background: #ecf8f3; color: #26705a; }
 .pickerFooter button:disabled { opacity: .5; cursor: default; }
 
+/* The Classic ZmDialog has a fixed content box. Keep the action footer inside
+ * that box and let only the directory list scroll. */
+:global([data-nextcloud-classic-root='picker']) {
+	display: flex;
+	min-height: 0;
+	flex-direction: column;
+	overflow: hidden;
+}
+:global([data-nextcloud-classic-root='picker']) > div {
+	width: 100%;
+	height: 100% !important;
+	min-height: 0;
+}
+:global([data-nextcloud-classic-root='picker']) .picker {
+	display: flex;
+	height: 100% !important;
+	max-height: 100%;
+	flex-direction: column;
+	overflow: hidden;
+}
+:global([data-nextcloud-classic-root='picker']) .accountBar,
+:global([data-nextcloud-classic-root='picker']) .pickerToolbar,
+:global([data-nextcloud-classic-root='picker']) .pickerSearch,
+:global([data-nextcloud-classic-root='picker']) .pickerError,
+:global([data-nextcloud-classic-root='picker']) .pickerProgress,
+:global([data-nextcloud-classic-root='picker']) .manualLinks,
+:global([data-nextcloud-classic-root='picker']) .pickerFooter { flex-shrink: 0; }
+:global([data-nextcloud-classic-root='picker']) .treeList {
+	min-height: 0;
+	max-height: none;
+	flex: 1 1 auto;
+	overscroll-behavior: contain;
+}
+:global([data-nextcloud-classic-root='picker']) .pickerState { min-height: 0; flex: 1 1 auto; }
+:global([data-nextcloud-classic-root='picker']) .pickerFooter { position: relative; z-index: 2; flex: 0 0 auto; }
+
 @media (max-width: 680px) {
 	.modalDialog { width: calc(100vw - 20px) !important; max-width: calc(100vw - 20px) !important; }
 	.pickerToolbar { align-items: stretch; flex-direction: column; }

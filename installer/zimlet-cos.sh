@@ -247,3 +247,38 @@ cloud_sync_chat_account_assignments() {
 
   [[ "$CHAT_ZIMLET_ACCOUNT_TOTAL" -eq "$CLOUD_ZIMLET_ACCOUNT_TOTAL" ]]
 }
+
+# Reuse the optimized Cloud-assignment mirror for another companion package,
+# such as the Classic UI shell. The established Chat globals are restored so
+# diagnostics and repair scripts keep their original semantics.
+cloud_sync_companion_cos_assignments() {
+  local companion="$1" previous="$CHAT_ZIMLET_NAME" result=0
+  CHAT_ZIMLET_NAME="$companion"
+  cloud_sync_chat_cos_assignments || result=$?
+  CHAT_ZIMLET_NAME="$previous"
+  return "$result"
+}
+
+cloud_sync_companion_account_assignments() {
+  local companion="$1" previous="$CHAT_ZIMLET_NAME" result=0
+  CHAT_ZIMLET_NAME="$companion"
+  cloud_sync_chat_account_assignments || result=$?
+  CHAT_ZIMLET_NAME="$previous"
+  return "$result"
+}
+
+cloud_scan_companion_cos_assignments() {
+  local companion="$1" previous="$CHAT_ZIMLET_NAME" result=0
+  CHAT_ZIMLET_NAME="$companion"
+  cloud_scan_chat_cos_assignments || result=$?
+  CHAT_ZIMLET_NAME="$previous"
+  return "$result"
+}
+
+cloud_scan_companion_account_assignments() {
+  local companion="$1" previous="$CHAT_ZIMLET_NAME" result=0
+  CHAT_ZIMLET_NAME="$companion"
+  cloud_scan_chat_account_assignments || result=$?
+  CHAT_ZIMLET_NAME="$previous"
+  return "$result"
+}

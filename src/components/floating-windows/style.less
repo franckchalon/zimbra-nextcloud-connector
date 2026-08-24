@@ -94,6 +94,17 @@
 
 .closeButton:hover { background: #eaf1f5; }
 
+/* Keep the office canvas dominant, especially in Zimbra Classic where the
+ * host already provides its own application bar above this window. */
+.editorWindow .header {
+	min-height: 36px;
+	gap: 8px;
+	padding: 3px 7px 3px 12px;
+}
+
+.editorWindow .header h2 { font-size: 13px; }
+.editorWindow .closeButton { width: 28px; height: 28px; font-size: 21px; line-height: 24px; }
+
 .resizeHandle { position: absolute; z-index: 20; display: block; touch-action: none; }
 .resizeHandleN { top: 0; right: 12px; left: 12px; height: 8px; cursor: n-resize; }
 .resizeHandleNE { top: 0; right: 0; width: 16px; height: 16px; cursor: ne-resize; }

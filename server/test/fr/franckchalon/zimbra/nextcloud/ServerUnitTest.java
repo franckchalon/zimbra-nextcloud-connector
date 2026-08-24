@@ -56,7 +56,7 @@ public final class ServerUnitTest {
     }
 
     private static void testVersion() {
-        check("3.1.23".equals(Version.VALUE), "Version serveur 3.1.23");
+        check("3.2.0-beta.7".equals(Version.VALUE), "Version serveur 3.2.0-beta.7");
         check(Version.USER_AGENT.contains(Version.VALUE), "Version présente dans le User-Agent");
     }
 

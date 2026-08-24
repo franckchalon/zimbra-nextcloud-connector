@@ -1,6 +1,6 @@
 # Security policy
 
-Version 3.1.23 is a public beta. It has automated security-oriented tests but has not received an independent security audit or penetration test.
+Version 3.2.0-beta.6 is a public beta. It has automated security-oriented tests but has not received an independent security audit or penetration test.
 
 Please do not disclose a suspected vulnerability in a public issue before a fix is available. Use GitHub **Private vulnerability reporting** on the public repository. If that feature is unavailable, open a public issue containing no technical vulnerability detail and ask the maintainer for a private contact channel.
 
@@ -8,7 +8,8 @@ Include the affected version, impact, reproduction steps and a minimal sanitized
 
 | Release | Security status |
 | --- | --- |
-| 3.1.23 Public Beta | Receives best-effort security fixes; not production-certified |
+| 3.2.0-beta.6 | Receives best-effort security fixes; not production-certified |
+| 3.1.23 Public Beta | Receives best-effort security fixes for confirmed regressions during the 3.2 beta cycle |
 | Earlier/unreleased builds | Unsupported |
 
 Administrators should use HTTPS, JWT for every global or per-profile office provider, a dedicated least-privilege Nextcloud service account in managed mode, and Nextcloud app passwords. Per-profile office secrets are stored inside the AES-GCM encrypted profile and are never returned by the profile API. Public links created by this Zimlet are read-only by default.

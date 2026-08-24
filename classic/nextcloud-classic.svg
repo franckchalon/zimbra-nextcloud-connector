@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-label="Nextcloud">
+  <path fill="#1686c4" d="M7.15 7.2a4.8 4.8 0 0 0-4.72 4A3.85 3.85 0 0 0 3.85 18h15.9a3.25 3.25 0 0 0 .3-6.49 5.65 5.65 0 0 0-10.7-1.17A4.8 4.8 0 0 0 7.15 7.2Z"/>
+  <circle cx="12" cy="12.7" r="2.15" fill="#fff"/>
+  <circle cx="7.75" cy="12.7" r="1.55" fill="#fff"/>
+  <circle cx="16.25" cy="12.7" r="1.55" fill="#fff"/>
+</svg>
