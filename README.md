@@ -57,6 +57,28 @@ The existing IDs `com_nextcloud_connector` and `com_nextcloud_connector_chat` ar
 
 Classic support is new in this beta. Automated tests verify packaging, host mounting, navigation, the compose bridge and Quick Chat lifecycle. Real-server compatibility reports are required before the support claim is broadened.
 
+## Screenshots
+
+### Modern UI
+
+| Cloud file browser | Nextcloud account setup |
+|---|---|
+| ![Modern UI Cloud file browser](docs/images/modern-ui/cloud.png) | ![Modern UI Nextcloud account setup](docs/images/modern-ui/account-setup.png) |
+
+| Cloud attachment in email | Collaborative document editor |
+|---|---|
+| ![Modern UI Cloud attachment](docs/images/modern-ui/cloud-email-attachment.png) | ![Modern UI collaborative editor](docs/images/modern-ui/editor.png) |
+
+### Classic UI
+
+| Cloud file browser | Nextcloud Talk |
+|---|---|
+| ![Classic UI Cloud file browser](docs/images/classic-ui/cloud.png) | ![Classic UI Nextcloud Talk](docs/images/classic-ui/talk.png) |
+
+| Collaborative document editor |
+|---|
+| ![Classic UI collaborative editor](docs/images/classic-ui/editor.png) |
+
 ## Requirements
 
 - A Zimbra mailbox server with root access and either the Modern UI, Classic UI, or both.

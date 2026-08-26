@@ -57,6 +57,28 @@ Les identifiants existants `com_nextcloud_connector` et `com_nextcloud_connector
 
 Classic est nouveau dans cette bêta. Les tests automatisés couvrent le paquet, le montage dans l’hôte, la navigation, le pont composeur et le cycle de vie du mini-chat. Il faut maintenant des rapports sur de vrais serveurs Zimbra FOSS avant d’élargir la compatibilité annoncée.
 
+## Captures d’écran
+
+### Interface Modern
+
+| Navigation dans les fichiers Cloud | Ajout d’un compte Nextcloud |
+|---|---|
+| ![Navigation Cloud dans l’interface Modern](docs/images/modern-ui/cloud.png) | ![Ajout d’un compte Nextcloud dans l’interface Modern](docs/images/modern-ui/account-setup.png) |
+
+| Ajout d’un fichier Cloud à un message | Éditeur collaboratif |
+|---|---|
+| ![Ajout d’une pièce jointe Cloud dans l’interface Modern](docs/images/modern-ui/cloud-email-attachment.png) | ![Éditeur collaboratif dans l’interface Modern](docs/images/modern-ui/editor.png) |
+
+### Interface Classic
+
+| Navigation dans les fichiers Cloud | Nextcloud Talk |
+|---|---|
+| ![Navigation Cloud dans l’interface Classic](docs/images/classic-ui/cloud.png) | ![Nextcloud Talk dans l’interface Classic](docs/images/classic-ui/talk.png) |
+
+| Éditeur collaboratif |
+|---|
+| ![Éditeur collaboratif dans l’interface Classic](docs/images/classic-ui/editor.png) |
+
 ## Prérequis
 
 - Serveur mailbox Zimbra avec accès `root` et interface Modern, Classic ou les deux.
